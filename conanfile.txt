@@ -1,0 +1,6 @@
+[requires]
+eigen/3.4.0
+llvm-openmp/12.0.1
+
+[generators]
+cmake

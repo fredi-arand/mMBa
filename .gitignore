@@ -1,0 +1,5 @@
+.venv
+build
+
+# Some stuff you might want to add to .git/info/exclude
+# .vscode

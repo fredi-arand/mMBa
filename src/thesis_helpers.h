@@ -235,12 +235,21 @@ namespace thesis_helpers {
       if(distanceField[index]>0)
         processingOrder.push_back(index);
 
+#ifdef ENABLE_GNU_PARALLEL
     __gnu_parallel::sort(processingOrder.begin(), processingOrder.end(),
                          [&](size_t const & i, size_t const & j){
       return distanceField[i]==distanceField[j]
           ? i<j // for reproducibility
           : distanceField[i]>distanceField[j];
     });
+#else
+    sort(processingOrder.begin(), processingOrder.end(),
+                         [&](size_t const & i, size_t const & j){
+      return distanceField[i]==distanceField[j]
+          ? i<j // for reproducibility
+          : distanceField[i]>distanceField[j];
+    });
+    #endif
 
     for(size_t n=0; n<processingOrder.size(); ++n)
     {
@@ -406,8 +415,13 @@ namespace thesis_helpers {
     vector<size_t> processingOrder;
     processingOrder.clear(); processingOrder.reserve(distanceField.voxelValues.size()/16);
 
+#ifdef ENABLE_GNU_PARALLEL
     float r_max = *(__gnu_parallel::max_element(distanceField.voxelValues.begin(),
                                                 distanceField.voxelValues.end()));
+#else
+        float r_max = *(max_element(distanceField.voxelValues.begin(),
+                                                distanceField.voxelValues.end()));
+#endif
 
     float r_infimum = r_max;
 
@@ -433,12 +447,21 @@ namespace thesis_helpers {
       cout << "Pores: " << parentToVoxelIndex.size() << endl;
       cout << scientific << r_infimum << " < r <= " << r_max << endl;
 
+#ifdef ENABLE_GNU_PARALLEL
       __gnu_parallel::sort(processingOrder.begin(), processingOrder.end(),
                            [&](size_t const & i, size_t const & j){
         return distanceField[i]==distanceField[j]
             ? i<j // for reproducibility
             : distanceField[i]>distanceField[j];
       });
+#else
+      sort(processingOrder.begin(), processingOrder.end(),
+                           [&](size_t const & i, size_t const & j){
+        return distanceField[i]==distanceField[j]
+            ? i<j // for reproducibility
+            : distanceField[i]>distanceField[j];
+      });
+#endif
 
       if(processingOrder.size()==0)
       {r_max = r_infimum; continue;}
