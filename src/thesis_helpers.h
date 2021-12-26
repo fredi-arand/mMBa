@@ -8,7 +8,7 @@
 
 namespace thesis_helpers {
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 void gnuplot_distance_field_and_maximal_balls(
     string const &folderName, DistanceField const &distanceField) {
@@ -45,7 +45,7 @@ void gnuplot_distance_field_and_maximal_balls(
   }
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void gnuplot_volume_to_images(string const &folderName,
@@ -62,21 +62,21 @@ void gnuplot_volume_to_images(string const &folderName,
   }
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 uint32_t get_parent(uint32_t const &morphologyValue) {
   static uint32_t morphologyReader = (~0) - (1 << 31) - (1 << 30);
   return morphologyReader & morphologyValue;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 uint32_t get_flag(uint32_t const &morphologyValue) {
   static uint32_t flagReader = (1 << 31) + (1 << 30);
   return flagReader & morphologyValue;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
     throatValue{uint32_t(1) << 31},
@@ -84,7 +84,7 @@ uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
 
 unsigned fileCounter = 0;
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 void gnuplot_palette_file(string fileName,
                           PoreMorphology const &poreMorphology) {
@@ -127,7 +127,7 @@ void gnuplot_palette_file(string fileName,
   }
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 void update_neighbors_box(DistanceField const &distanceField,
                           VoxelVolume<uint32_t> &morphologyVolume,
@@ -339,7 +339,7 @@ void update_neighbors_box(DistanceField const &distanceField,
   ++fileCounter;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
                      float rMinBall) {

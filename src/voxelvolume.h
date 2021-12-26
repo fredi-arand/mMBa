@@ -14,7 +14,7 @@
 using namespace std;
 using namespace Eigen;
 
-// ************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T> struct VoxelVolume {
 
@@ -88,7 +88,7 @@ template <typename T> struct VoxelVolume {
   bool hasValues;
 };
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T> void VoxelVolume<T>::switch_xy() {
   VoxelVolume<T> switchedVolume(*this);
@@ -105,7 +105,7 @@ template <typename T> void VoxelVolume<T>::switch_xy() {
   voxelValues = switchedVolume.voxelValues;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 size_t VoxelVolume<T>::vx_to_vxID(Vector3i const &vx) const {
@@ -125,7 +125,7 @@ size_t VoxelVolume<T>::vx_to_vxID(Vector3i const &vx) const {
   return spacing.dot(vxNew);
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 T VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
@@ -136,7 +136,7 @@ T VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
   return isoValue;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
@@ -201,7 +201,7 @@ void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
   }
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
@@ -222,7 +222,7 @@ void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
   hasValues = true;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void VoxelVolume<T>::import_raw_volume(Vector3i const &s, string filename) {
@@ -255,7 +255,7 @@ void VoxelVolume<T>::import_raw_volume(Vector3i const &s, string filename) {
   hasValues = true;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void VoxelVolume<T>::export_pgm_stacks(string foldername) const {
@@ -296,7 +296,7 @@ void VoxelVolume<T>::export_pgm_stacks(string foldername) const {
   }
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
 

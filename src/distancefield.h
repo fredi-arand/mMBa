@@ -50,7 +50,7 @@ struct DistanceField : public VoxelVolume<float> {
   bool distanceFieldCreated;
 };
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 template <typename T>
 void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
@@ -227,6 +227,6 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
        << " s" << endl;
 }
 
-//*************************************************************************************************
+//------------------------------------------------------------------------------
 
 #endif // DISTANCEFIELD_H
