@@ -78,7 +78,7 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
   for (size_t dimStart = 0; dimStart < 3; ++dimStart) {
     VoxelVolume<float> testDistanceField = *this;
     testDistanceField.voxelValues.clear();
-    testDistanceField.voxelValues.resize(s.prod(), posInf);
+    testDistanceField.voxelValues.resize(s.cast<size_t>().prod(), posInf);
 #pragma omp parallel for
     for (size_t n = 0; n < voxelValues.size(); ++n)
       if (voxelVolume.voxelValues[n] >= isoValue)
@@ -89,8 +89,8 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
     for (size_t dim = dimStart; dim < dimStart + 3; ++dim)
     // run multiple lines in parallel
 #pragma omp parallel for
-      for (size_t k = 0; k < s((dim + 2) % 3); ++k)
-        for (size_t j = 0; j < s((dim + 1) % 3); ++j) {
+      for (int k = 0; k < s((dim + 2) % 3); ++k)
+        for (int j = 0; j < s((dim + 1) % 3); ++j) {
 
           Vector3i vx(0, 0, 0);
           vx((dim + 2) % 3) = k;
@@ -108,7 +108,7 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
           vector<bool> onJunction;
           onJunction.reserve(2 * s(dim % 3));
 
-          for (size_t i = 0; i < s(dim % 3) - 1; ++i) {
+          for (int i = 0; i < s(dim % 3) - 1; ++i) {
             xMins.push_back(i);
             onJunction.push_back(true);
             fMins.push_back(testDistanceField.voxelValues[vxIDs[i]]);

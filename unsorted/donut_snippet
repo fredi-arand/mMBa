@@ -3,7 +3,7 @@
   donut.set_spacing_and_voxelValues_from_s();
   donut.voxelValues.clear();
   Vector3i s = donut.s;
-  donut.voxelValues.resize(donut.s.prod(),0);
+  donut.voxelValues.resize(donut.s.cast<size_t>().prod(),0);
   int superSampling = 16;
   float R = 10;
   float r = 3;

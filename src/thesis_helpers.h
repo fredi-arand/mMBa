@@ -20,11 +20,11 @@ void gnuplot_distance_field_and_maximal_balls(
 
   srand(0);
   map<size_t, float> color;
-  for (size_t n = 0; n < s.prod(); ++n)
+  for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     color[n] = float(rand()) / RAND_MAX;
 
-  for (unsigned i = 0; i < s(0); ++i)
-    for (unsigned j = 0; j < s(1); ++j) {
+  for (int i = 0; i < s(0); ++i)
+    for (int j = 0; j < s(1); ++j) {
       file_gp << i << " " << j << " " << distanceField(i, j, 0) << " "
               << color.at(distanceField.vx_to_vxID(Vector3i(i, j, 0))) << endl;
       if (distanceField(i, j, 0) == 0.0)
@@ -53,10 +53,10 @@ void gnuplot_volume_to_images(string const &folderName,
 
   Vector3i const &s = voxelVolume.s;
 
-  for (unsigned k = 0; k < s(2); ++k) {
+  for (int k = 0; k < s(2); ++k) {
     ofstream myFile(folderName + "stack_" + to_string(k) + ".txt");
-    for (unsigned j = 0; j < s(1); ++j)
-      for (unsigned i = 0; i < s(0); ++i) {
+    for (int j = 0; j < s(1); ++j)
+      for (int i = 0; i < s(0); ++i) {
         myFile << i << " " << j << " " << float(voxelVolume(i, j, k)) << endl;
       }
   }
@@ -95,11 +95,12 @@ void gnuplot_palette_file(string fileName,
 
   srand(0);
   map<size_t, float> color;
-  for (size_t n = 0; n < s.prod(); ++n)
+  for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     color[n] = float(rand()) / RAND_MAX;
 
   ofstream image_palette_file(fileName);
-  for (size_t voxelIndex = 0; voxelIndex < s.prod(); ++voxelIndex) {
+  for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
+       ++voxelIndex) {
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
@@ -211,12 +212,12 @@ void update_neighbors_box(DistanceField const &distanceField,
 
   srand(0);
   map<size_t, float> color;
-  for (size_t n = 0; n < s.prod(); ++n)
+  for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     color[n] = float(rand()) / RAND_MAX;
 
   vector<size_t> processingOrder;
 
-  for (size_t index = 0; index < s.prod(); ++index)
+  for (size_t index = 0; index < s.cast<size_t>().prod(); ++index)
     if (distanceField[index] > 0)
       processingOrder.push_back(index);
 
@@ -272,12 +273,13 @@ void update_neighbors_box(DistanceField const &distanceField,
              << color.at(parentToVoxelIndex.at(parent_i)) << endl;
 
   vector<Vector3i> colors2;
-  for (size_t n = 0; n < s.prod(); ++n)
+  for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     colors2.push_back(Vector3i(rand() % 255, rand() % 255, rand() % 255));
 
   ofstream image_file("thesis/steps/" + to_string(fileCounter) + "img.txt");
 
-  for (size_t voxelIndex = 0; voxelIndex < s.prod(); ++voxelIndex) {
+  for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
+       ++voxelIndex) {
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
@@ -309,7 +311,8 @@ void update_neighbors_box(DistanceField const &distanceField,
 
   ofstream image_palette_file("thesis/steps/" + to_string(fileCounter) +
                               "img_palette.txt");
-  for (size_t voxelIndex = 0; voxelIndex < s.prod(); ++voxelIndex) {
+  for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
+       ++voxelIndex) {
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
@@ -357,12 +360,12 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
   morphologyVolume.spacing = distanceField.spacing;
 
   morphologyVolume.voxelValues.clear();
-  morphologyVolume.voxelValues.resize(morphologyVolume.s.prod(),
+  morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
                                       backgroundValue);
 
   // each voxel in the void space is its own master
   size_t voidVoxels = 0;
-  for (size_t n = 0; n < s.prod(); ++n)
+  for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
       ++voidVoxels;
       morphologyVolume[n] = initValue;
@@ -396,7 +399,7 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
     //    r_infimum = 0.0;
 
     processingOrder.clear();
-    for (size_t index = 0; index < s.prod(); ++index)
+    for (size_t index = 0; index < s.cast<size_t>().prod(); ++index)
       if (distanceField[index] > r_infimum && distanceField[index] <= r_max &&
           get_flag(morphologyVolume[index]) == initValue)
         processingOrder.push_back(index);
@@ -427,8 +430,8 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
       continue;
     }
 
-    size_t progressCounter = 0;
-    size_t forLoopCounter = 0;
+    // size_t progressCounter = 0;
+    // size_t forLoopCounter = 0;
     for (auto const &voxelIndex_i : processingOrder) {
 
       float const &r_i = distanceField[voxelIndex_i];

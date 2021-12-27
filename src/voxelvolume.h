@@ -32,7 +32,7 @@ template <typename T> struct VoxelVolume {
   // quickly set spacing and voxelValues for given s
   void set_spacing_and_voxelValues_from_s() {
     spacing << 1, s(0), s(0) * s(1);
-    voxelValues.resize(s.prod());
+    voxelValues.resize(s.cast<size_t>().prod());
   }
 
   // switch x and y
@@ -93,7 +93,7 @@ template <typename T> struct VoxelVolume {
 template <typename T> void VoxelVolume<T>::switch_xy() {
   VoxelVolume<T> switchedVolume(*this);
   switchedVolume.voxelValues.clear();
-  switchedVolume.voxelValues.resize(s.prod());
+  switchedVolume.voxelValues.resize(s.cast<size_t>().prod());
 
   Vector3i xi;
   size_t i = 0;
@@ -150,7 +150,7 @@ void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
 
   isFict.s = s.array() - 1;
   isFict.spacing = Vector3i(1, isFict.s(0), isFict.s(0) * isFict.s(1));
-  isFict.voxelValues.resize(isFict.s.prod());
+  isFict.voxelValues.resize(isFict.s.cast<size_t>().prod());
 
   isPhys.s = isFict.s;
   isPhys.spacing = isFict.spacing;
@@ -215,7 +215,7 @@ void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
   cout << "\nCombining Volumes ...\n";
   s = volA.s;
   spacing = volA.spacing;
-  voxelValues.resize(s.prod(), 0);
+  voxelValues.resize(s.cast<size_t>().prod(), 0);
   transform(volA.voxelValues.begin(), volA.voxelValues.end(),
             volB.voxelValues.begin(), voxelValues.begin(), multiplies<T>());
 
@@ -304,7 +304,7 @@ template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
 
   cout << "\nExporting Raw Volume to \"" << filename << "\" ...\n";
 
-  myfile.write((char *)&voxelValues[0], sizeof(T) * s.prod());
+  myfile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
 }
 
 #endif // VOXELVOLUME_H

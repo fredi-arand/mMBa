@@ -31,7 +31,7 @@ void thesis7();          // downsampled large region
 void thesis8();          // 8 segmentations (model)
 void thesis9();          // downsampled large region (model)
 
-int main(int argc, char *argv[]) {
+int main(int, char **) {
 
   thesis9();
   return 0;

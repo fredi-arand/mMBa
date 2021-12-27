@@ -19,7 +19,7 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
   Vector3i resolution(resolution1D, resolution1D, resolution1D);
   Vector3f A(-0.5, -0.5, -0.5);
   Vector3f dAB(resolution.cast<float>());
-  long int subcellPoints = 8;
+  size_t subcellPoints = 8;
 
   // fine volume stores binary volumes for subcell points: in or out
   VoxelVolume<bool> fineVolume;
@@ -131,7 +131,7 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
   voxelVolume.s = resolution;
   voxelVolume.set_spacing_and_voxelValues_from_s();
   voxelVolume.voxelValues.clear();
-  voxelVolume.voxelValues.resize(voxelVolume.s.prod(), 0);
+  voxelVolume.voxelValues.resize(voxelVolume.s.cast<size_t>().prod(), 0);
 
   size_t possibleCounts = subcellPoints * subcellPoints * subcellPoints;
 #pragma omp parallel for
@@ -176,7 +176,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
   greyVolume.s = Vector3i(cubeLength, cubeLength, cubeLength);
   greyVolume.set_spacing_and_voxelValues_from_s();
   greyVolume.voxelValues.clear();
-  greyVolume.voxelValues.resize(greyVolume.s.prod(), 0);
+  greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 0);
 
   cout << endl << cubeLength << endl;
 
@@ -230,7 +230,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
         vxMin(dim) = 0;
       }
       vxMax(dim) = ceil(vxCenter(dim) + rVx);
-      if (vxMax(dim) > cubeLength) {
+      if (vxMax(dim) > static_cast<int>(cubeLength)) {
         vxMax(dim) = cubeLength;
       }
     }
@@ -348,7 +348,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
   greyVolume.s = Vector3i(cubeLength, cubeLength, cubeLength);
   greyVolume.set_spacing_and_voxelValues_from_s();
   greyVolume.voxelValues.clear();
-  greyVolume.voxelValues.resize(greyVolume.s.prod(), 255);
+  greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 255);
 
   cout << endl << cubeLength << endl;
 
@@ -382,7 +382,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
         vxMin(dim) = 0;
       }
       vxMax(dim) = ceil(vxCenter(dim) + rVx);
-      if (vxMax(dim) > cubeLength) {
+      if (vxMax(dim) > static_cast<int>(cubeLength)) {
         vxMax(dim) = cubeLength;
       }
     }

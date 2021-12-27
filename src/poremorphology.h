@@ -806,7 +806,7 @@ void PoreMorphology::create_pore_morphology(float rMinMaster, float rMinBall) {
     //    r_infimum = 0.0;
 
     processingOrder.clear();
-    for (size_t index = 0; index < s.prod(); ++index)
+    for (size_t index = 0; index < s.cast<size_t>().prod(); ++index)
       if (distanceField[index] > r_infimum && distanceField[index] <= r_max &&
           (get_flag(morphologyVolume[index]) == initValue))
         processingOrder.push_back(index);
@@ -944,7 +944,8 @@ void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
       Vector3i(2 * roundedR_i + 1, 2 * roundedR_i + 1, 2 * roundedR_i + 1);
   processedVoxels.spacing = Vector3i(
       1, processedVoxels.s(0), processedVoxels.s(0) * processedVoxels.s(1));
-  processedVoxels.voxelValues.resize(processedVoxels.s.prod(), 0);
+  processedVoxels.voxelValues.resize(processedVoxels.s.cast<size_t>().prod(),
+                                     0);
   processedVoxels(roundedR_i, roundedR_i, roundedR_i) = 1;
 
   for (size_t n = 0; n != floodStack.size(); ++n) {

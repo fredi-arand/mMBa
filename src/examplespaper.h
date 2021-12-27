@@ -16,7 +16,8 @@ using namespace Eigen;
 //   VoxelVolume<int> image;
 //   image.s = Vector3i(9,13,1);
 //   image.set_spacing_and_voxelValues_from_s();
-//   image.voxelValues.clear(); image.voxelValues.resize(image.s.prod(),0);
+//   image.voxelValues.clear();
+//   image.voxelValues.resize(image.s.cast<size_t>().prod(),0);
 
 //  Vector2f m0(4,4), m1(4,7); float r0 = 3.5*3.5, r1 = 2.5*2.5;
 
@@ -25,7 +26,7 @@ using namespace Eigen;
 //            << m1.transpose() << " " << sqrt(r1) << endl;
 
 //#pragma omp parallel for
-//  for(size_t pxID=0; pxID<image.s.prod(); ++pxID)
+//  for(size_t pxID=0; pxID<image.s.cast<size_t>().prod(); ++pxID)
 //  {
 //    int sGrid = 16;
 //    size_t hits=0;
@@ -56,7 +57,8 @@ using namespace Eigen;
 //   VoxelVolume<int> image;
 //   image.s = Vector3i(16,24,1);
 //   image.set_spacing_and_voxelValues_from_s();
-//   image.voxelValues.clear(); image.voxelValues.resize(image.s.prod(),0);
+//   image.voxelValues.clear();
+//   image.voxelValues.resize(image.s.cast<size_t>().prod(),0);
 
 //  Vector2f m0(7,7), m1(9,17); float r0 = 6.5*6.5, r1 = 5.5*5.5;
 
@@ -65,7 +67,7 @@ using namespace Eigen;
 //            << m1.transpose() << " " << sqrt(r1) << endl;
 
 //#pragma omp parallel for
-//  for(size_t pxID=0; pxID<image.s.prod(); ++pxID)
+//  for(size_t pxID=0; pxID<image.s.cast<size_t>().prod(); ++pxID)
 //  {
 //    int sGrid = 16;
 //    size_t hits=0;
