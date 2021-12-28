@@ -1,5 +1,8 @@
 .venv
 build
+.DS_Store
 
 # Some stuff you might want to add to .git/info/exclude
 # .vscode
+# Berea.raw
+# output

@@ -30,13 +30,24 @@ void thesis6();          // 8 segmentations of subregions
 void thesis7();          // downsampled large region
 void thesis8();          // 8 segmentations (model)
 void thesis9();          // downsampled large region (model)
+void berea();
 
 int main(int, char **) {
 
-  thesis9();
+  berea();
   return 0;
 }
-
+//------------------------------------------------------------------------------
+void berea() {
+  Vector3i s(400, 400, 400);
+  DistanceField distanceField;
+  distanceField.create_distance_field<uint8_t>(s, "../../Berea.raw");
+  PoreMorphology poreMorphology(distanceField);
+  poreMorphology.create_pore_morphology(0.0, 0.0);
+  poreMorphology.reduce_throat_volume();
+  poreMorphology.merge_pores(0.8);
+  poreMorphology.export_ppm_stacks("../../output/stacks/");
+}
 //------------------------------------------------------------------------------
 
 void thesis9() {
