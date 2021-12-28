@@ -1,5 +1,4 @@
-#ifndef IMPORTHOMBERG_H
-#define IMPORTHOMBERG_H
+#pragma once
 
 #include "Eigen/Dense"
 #include "voxelvolume.h"
@@ -488,5 +487,3 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
   return greyVolume;
 }
-
-#endif // IMPORTHOMBERG_H

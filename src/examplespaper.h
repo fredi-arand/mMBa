@@ -1,5 +1,4 @@
-#ifndef EXAMPLESPAPER_H
-#define EXAMPLESPAPER_H
+#pragma once
 
 #include "Eigen/Dense"
 #include "distancefield.h"
@@ -138,5 +137,3 @@ using namespace Eigen;
 //  poreMorphology.export_ppm_stacks("output/morphology/");
 
 //}
-
-#endif // EXAMPLESPAPER_H

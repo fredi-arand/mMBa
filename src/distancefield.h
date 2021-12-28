@@ -1,5 +1,4 @@
-#ifndef DISTANCEFIELD_H
-#define DISTANCEFIELD_H
+#pragma once
 
 #include "Eigen/Dense"
 #include "voxelvolume.h"
@@ -228,5 +227,3 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
 }
 
 //------------------------------------------------------------------------------
-
-#endif // DISTANCEFIELD_H
