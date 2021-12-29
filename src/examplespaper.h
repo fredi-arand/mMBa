@@ -6,7 +6,9 @@
 #include "voxelvolume.h"
 #include <iostream>
 #include <utility>
-
+//------------------------------------------------------------------------------
+namespace fred {
+//------------------------------------------------------------------------------
 using namespace std;
 using namespace Eigen;
 
@@ -137,3 +139,5 @@ using namespace Eigen;
 //  poreMorphology.export_ppm_stacks("output/morphology/");
 
 //}
+//------------------------------------------------------------------------------
+} // namespace fred

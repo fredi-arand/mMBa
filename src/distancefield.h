@@ -6,7 +6,9 @@
 #include <chrono>
 #include <limits>
 #include <map>
-
+//------------------------------------------------------------------------------
+namespace fred {
+//------------------------------------------------------------------------------
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
@@ -225,5 +227,5 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
 }
-
 //------------------------------------------------------------------------------
+} // namespace fred

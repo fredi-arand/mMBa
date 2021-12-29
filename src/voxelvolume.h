@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-
+//------------------------------------------------------------------------------
+namespace fred {
+//------------------------------------------------------------------------------
 using namespace std;
 using namespace Eigen;
 
@@ -305,3 +307,5 @@ template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
 
   myfile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
 }
+//------------------------------------------------------------------------------
+} // namespace fred

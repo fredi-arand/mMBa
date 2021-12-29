@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 #include <vector>
+//------------------------------------------------------------------------------
+namespace fred {
 
 using namespace std;
 using namespace Eigen;
@@ -487,3 +489,5 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
   return greyVolume;
 }
+//------------------------------------------------------------------------------
+} // namespace fred

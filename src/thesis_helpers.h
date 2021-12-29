@@ -6,7 +6,7 @@
 #include <iostream>
 #include <set>
 
-namespace thesis_helpers {
+namespace fred {
 
 //------------------------------------------------------------------------------
 
@@ -496,4 +496,4 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
   cout << "Pores: " << parentToVoxelIndex.size() << endl;
 }
 
-} // namespace thesis_helpers
+} // namespace fred

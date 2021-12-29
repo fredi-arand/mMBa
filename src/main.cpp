@@ -10,6 +10,7 @@
 #include <thesis_helpers.h>
 
 using namespace std;
+using namespace fred;
 
 void carbonFoamPaper1();
 void carbonFoamPaper2();
@@ -363,7 +364,6 @@ void krakowska1() {
 //------------------------------------------------------------------------------
 
 void thesis2() {
-  using namespace thesis_helpers;
 
   VoxelVolume<uint8_t> coverageRepresentation0;
   coverageRepresentation0.import_raw_volume(
@@ -402,8 +402,6 @@ void thesis2() {
 //------------------------------------------------------------------------------
 
 void thesis1() {
-
-  using namespace thesis_helpers;
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(

@@ -21,7 +21,7 @@
 #endif
 
 #define PI 3.14159265358979323846
-
+namespace fred {
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
@@ -1094,3 +1094,5 @@ void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
         flag_j = enclosedValue;
       }
 }
+//------------------------------------------------------------------------------
+} // namespace fred
