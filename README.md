@@ -1,28 +1,25 @@
-# Modified Maximal Ball Algorithm
+# Modified Maximal Ball Algorithm (mMBa)
 
-A short summary
+Algorithm which was used for my
+[PhD thesis](https://archiv.ub.uni-heidelberg.de/volltextserver/26476/).
+It is a slightly improved version of the algorithm presented in
+[Computers & Geosciences](https://www.sciencedirect.com/science/article/pii/S0098300416305180).
 
-## Building the program
+Being a physicist, I had to learn programming, so excuse the mess 😉
 
-For now, you will have to build yourself.
+## First steps
 
-### Mac/Linux 
+Typically, you might want to "see something". In order to do so, download the
+[Berea sandstone](https://www.imperial.ac.uk/earth-science/research/research-groups/pore-scale-modelling/micro-ct-images-and-networks/berea-sandstone/)
+sample and put `Berea.raw` into this directory.
 
-Please run
+Next, have a look at `demo.sh` (and maybe `src/main.cpp`). If you think that it
+will probably work out, run
 
 ```
-./install.sh
+./demo.sh
 ```
-
-### Windows
-
-You can contribute that 🙂
 
 ### Troubleshooting
 
-Contact me 😉
-
-## Getting some data
-
-A good example is the Berea sandstone, which you can get here:
-https://www.imperial.ac.uk/earth-science/research/research-groups/pore-scale-modelling/micro-ct-images-and-networks/berea-sandstone/
+[Contact me 😉](mailto:fredi.arand@gmail.com)
