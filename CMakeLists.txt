@@ -4,7 +4,7 @@ project(mMBa)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
 conan_basic_setup()
 
-add_compile_options(-Wall -Wextra -Werror)
+add_compile_options(-Wall -Wextra -Werror -Wfatal-errors)
 
 add_executable(mMBa src/main.cpp)
 target_include_directories(mMBa PRIVATE src)
