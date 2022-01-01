@@ -95,9 +95,7 @@ struct PoreMorphology {
   bool poreMorphologyCreated, throatsReduced;
   DistanceField const *distanceFieldP;
 };
-
 //------------------------------------------------------------------------------
-
 inline bool PoreMorphology::quick_neighbor_check(size_t i) {
 
   bool ignoreBall = false;
@@ -142,26 +140,20 @@ inline bool PoreMorphology::quick_neighbor_check(size_t i) {
 
   return ignoreBall;
 }
-
 //------------------------------------------------------------------------------
-
 inline uint32_t
 PoreMorphology::get_parent(uint32_t const &morphologyValue) const {
   static uint32_t morphologyReader =
       (~uint32_t(0)) - (uint32_t(1) << 31) - (uint32_t(1) << 30);
   return morphologyReader & morphologyValue;
 }
-
 //------------------------------------------------------------------------------
-
 inline uint32_t
 PoreMorphology::get_flag(uint32_t const &morphologyValue) const {
   static uint32_t flagReader = (uint32_t(1) << 31) + (uint32_t(1) << 30);
   return flagReader & morphologyValue;
 }
-
 //------------------------------------------------------------------------------
-
 inline void
 PoreMorphology::create_legacy_volumes(VoxelVolume<uint32_t> &_morphologyVolume,
                                       VoxelVolume<uint8_t> &stateVolume) {
@@ -184,9 +176,7 @@ PoreMorphology::create_legacy_volumes(VoxelVolume<uint32_t> &_morphologyVolume,
     _morphologyVolume.voxelValues[n] = uint32_t(parent);
   }
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::merge_pores(float throatRatio) {
 
   cout << "\nMerging Pores with maximum throat ratio > " << throatRatio
@@ -429,9 +419,7 @@ inline void PoreMorphology::merge_pores(float throatRatio) {
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::export_ppm_stacks(string foldername) {
   //  srand(time(NULL));
   srand(0);
@@ -532,9 +520,7 @@ inline void PoreMorphology::export_ppm_stacks(string foldername) {
     myFile.write((const char *)currImage.data(), currImage.size());
   }
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::reduce_throat_volume() {
 
   if (!poreMorphologyCreated) {
@@ -748,9 +734,7 @@ inline void PoreMorphology::reduce_throat_volume() {
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::create_pore_morphology(float rMinMaster,
                                                    float rMinBall) {
 
@@ -924,9 +908,7 @@ inline void PoreMorphology::create_pore_morphology(float rMinMaster,
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
   auto const &s = morphologyVolume.s;
   auto const &distanceField = *distanceFieldP;
@@ -1024,9 +1006,7 @@ inline void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
     }
   }
 }
-
 //------------------------------------------------------------------------------
-
 inline void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
 
   auto const &s = morphologyVolume.s;

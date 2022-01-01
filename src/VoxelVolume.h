@@ -64,6 +64,5 @@ template <typename T> struct VoxelVolume {
   Vector3l s, spacing;
   bool hasValues;
 };
-
 //------------------------------------------------------------------------------
 } // namespace fred

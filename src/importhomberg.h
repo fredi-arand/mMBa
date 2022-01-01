@@ -159,9 +159,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
   return voxelVolume;
 }
-
 //------------------------------------------------------------------------------
-
 inline VoxelVolume<uint8_t> import_homberg(string path) {
   ifstream myFile(path);
 

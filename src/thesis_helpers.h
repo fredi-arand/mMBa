@@ -7,9 +7,7 @@
 #include <set>
 
 namespace fred {
-
 //------------------------------------------------------------------------------
-
 inline void
 gnuplot_distance_field_and_maximal_balls(string const &folderName,
                                          DistanceField const &distanceField) {
@@ -45,9 +43,7 @@ gnuplot_distance_field_and_maximal_balls(string const &folderName,
              << color.at(distanceField.vx_to_vxID(Vector3l(i, j, 0))) << endl;
   }
 }
-
 //------------------------------------------------------------------------------
-
 template <typename T>
 void gnuplot_volume_to_images(string const &folderName,
                               VoxelVolume<T> const &voxelVolume) {
@@ -62,31 +58,23 @@ void gnuplot_volume_to_images(string const &folderName,
       }
   }
 }
-
 //------------------------------------------------------------------------------
-
 inline uint32_t get_parent(uint32_t const &morphologyValue) {
   static uint32_t morphologyReader = (~0) - (1 << 31) - (1 << 30);
   return morphologyReader & morphologyValue;
 }
-
 //------------------------------------------------------------------------------
-
 inline uint32_t get_flag(uint32_t const &morphologyValue) {
   static uint32_t flagReader = (1 << 31) + (1 << 30);
   return flagReader & morphologyValue;
 }
-
 //------------------------------------------------------------------------------
-
 static constexpr uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
     throatValue{uint32_t(1) << 31},
     backgroundValue{(uint32_t(1) << 31) + (uint32_t(1) << 30)};
 
 static unsigned fileCounter = 0;
-
 //------------------------------------------------------------------------------
-
 inline void gnuplot_palette_file(string fileName,
                                  PoreMorphology const &poreMorphology) {
 
@@ -128,9 +116,7 @@ inline void gnuplot_palette_file(string fileName,
     image_palette_file << position.transpose() << " " << x << endl;
   }
 }
-
 //------------------------------------------------------------------------------
-
 inline void
 update_neighbors_box(DistanceField const &distanceField,
                      VoxelVolume<uint32_t> &morphologyVolume,
@@ -344,9 +330,7 @@ update_neighbors_box(DistanceField const &distanceField,
 
   ++fileCounter;
 }
-
 //------------------------------------------------------------------------------
-
 inline void mb_step_by_step(DistanceField const &distanceField,
                             float rMinMaster, float rMinBall) {
 

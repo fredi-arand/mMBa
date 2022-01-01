@@ -51,7 +51,6 @@ void berea() {
   poreMorphology.export_ppm_stacks("../../output/stacks/");
 }
 //------------------------------------------------------------------------------
-
 void thesis9() {
   Vector3l s(1000, 1000, 1000);
 
@@ -76,9 +75,7 @@ void thesis9() {
   stateVolume.export_raw("/Users/arand/from_vgpc32/build/P41/input/"
                          "8_subvolumes_model/large_stateVolume.raw");
 }
-
 //------------------------------------------------------------------------------
-
 void thesis8() {
   Vector3l s(1000, 1000, 1000);
 
@@ -110,9 +107,7 @@ void thesis8() {
     stateVolume.export_raw((pathBase + "stateVolume.raw").c_str());
   }
 }
-
 //------------------------------------------------------------------------------
-
 void thesis7() {
   Vector3l s(1000, 1000, 1000);
 
@@ -136,9 +131,7 @@ void thesis7() {
       "../P41/input/8_subvolumes/large_morphologyVolume.raw");
   stateVolume.export_raw("../P41/input/8_subvolumes/large_stateVolume.raw");
 }
-
 //------------------------------------------------------------------------------
-
 void thesis6() {
   Vector3l s(1000, 1000, 1000);
 
@@ -168,9 +161,7 @@ void thesis6() {
     stateVolume.export_raw((pathBase + "stateVolume.raw").c_str());
   }
 }
-
 //------------------------------------------------------------------------------
-
 void thesis5() {
   Vector3l s(128, 128, 128);
   DistanceField distanceField;
@@ -191,9 +182,7 @@ void thesis5() {
       "../P41/input/verification2/morphologyVolume.raw");
   stateVolume.export_raw("../P41/input/verification2/stateVolume.raw");
 }
-
 //------------------------------------------------------------------------------
-
 void thesis4() {
   Vector3l s(512, 512, 512);
   DistanceField distanceField;
@@ -213,9 +202,7 @@ void thesis4() {
   morphologyVolume.export_raw("../P41/input/hcp/morphologyVolume.raw");
   stateVolume.export_raw("../P41/input/hcp/stateVolume.raw");
 }
-
 //------------------------------------------------------------------------------
-
 void thesis3() {
 
   Vector3l s(500, 500, 500);
@@ -244,9 +231,7 @@ void thesis3() {
     stateVolume.export_raw((pathBegin + "stateVolume_" + pathEnd).c_str());
   }
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper8() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
@@ -273,9 +258,7 @@ void carbonFoamPaper8() {
 
   //  poreMorphology.export_ppm_stacks("output/stacks/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper7() {
   Vector3l const s(750, 750, 750);
 
@@ -308,9 +291,7 @@ void carbonFoamPaper7() {
 
   //  poreMorphology.export_ppm_stacks("output/stacks/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper6() {
   Vector3l const s(750, 750, 750);
 
@@ -345,9 +326,7 @@ void carbonFoamPaper6() {
 
   poreMorphology.export_ppm_stacks("output/stacks/");
 }
-
 //------------------------------------------------------------------------------
-
 void krakowska1() {
   DistanceField distanceField;
   distanceField.create_distance_field<float>(
@@ -362,9 +341,7 @@ void krakowska1() {
 
   poreMorphology.export_ppm_stacks("output/stacks/");
 }
-
 //------------------------------------------------------------------------------
-
 void thesis2() {
 
   VoxelVolume<uint8_t> coverageRepresentation0;
@@ -400,9 +377,7 @@ void thesis2() {
   poreMorphology.merge_pores(0.8);
   gnuplot_palette_file("thesis/merged.txt", poreMorphology);
 }
-
 //------------------------------------------------------------------------------
-
 void thesis1() {
 
   DistanceField distanceField;
@@ -413,9 +388,7 @@ void thesis1() {
   gnuplot_distance_field_and_maximal_balls("../../source/thesis/chapter_2/",
                                            distanceField);
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper5() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
@@ -441,9 +414,7 @@ void carbonFoamPaper5() {
   poreMorphology.export_ppm_stacks(
       "output/morphology_carbonFoam_denoised_connected/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper5a() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
@@ -469,9 +440,7 @@ void carbonFoamPaper5a() {
 
   //  poreMorphology.export_ppm_stacks("output/morphology_carbonFoam_denoised_connected/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper4() {
 
   DistanceField distanceField;
@@ -498,9 +467,7 @@ void carbonFoamPaper4() {
   poreMorphology.export_ppm_stacks(
       "output/morphology_carbonFoam_denoised_connected/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper3() {
 
   DistanceField distanceField;
@@ -527,9 +494,7 @@ void carbonFoamPaper3() {
 
   //  poreMorphology.export_ppm_stacks("output/morphology_carbonFoam_denoised_connected/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper2() {
 
   DistanceField distanceField;
@@ -556,9 +521,7 @@ void carbonFoamPaper2() {
   poreMorphology.export_ppm_stacks(
       "output/morphology_carbonFoam_denoised_connected/");
 }
-
 //------------------------------------------------------------------------------
-
 void carbonFoamPaper1() {
 
   DistanceField distanceField;

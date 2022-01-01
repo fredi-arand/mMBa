@@ -52,7 +52,6 @@ using namespace Eigen;
 //}
 
 ////------------------------------------------------------------------------------
-
 // VoxelVolume<int> two_circles_one_box()
 //{
 //   VoxelVolume<int> image;
@@ -93,7 +92,6 @@ using namespace Eigen;
 //}
 
 ////------------------------------------------------------------------------------
-
 // void create_example()
 //{
 //   DistanceField distanceField;
@@ -113,7 +111,6 @@ using namespace Eigen;
 //}
 
 ////------------------------------------------------------------------------------
-
 // void create_example2()
 //{
 //   DistanceField distanceField;
