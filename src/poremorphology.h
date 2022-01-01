@@ -1,7 +1,7 @@
 #pragma once
 
+#include "DistanceField.h"
 #include "VoxelVolume.h"
-#include "distancefield.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -10,6 +10,7 @@
 #include <ctime>
 #include <fstream>
 #include <functional>
+#include <iostream>
 #include <list>
 #include <map>
 #include <queue>

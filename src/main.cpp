@@ -1,5 +1,5 @@
+#include "DistanceField.h"
 #include "VoxelVolume.h"
-#include "distancefield.h"
 #include "examplespaper.h"
 #include "importhomberg.h"
 #include "poremorphology.h"

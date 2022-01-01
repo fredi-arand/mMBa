@@ -1,6 +1,6 @@
 #pragma once
 
-#include "distancefield.h"
+#include "DistanceField.h"
 #include "poremorphology.h"
 #include <fstream>
 #include <iostream>

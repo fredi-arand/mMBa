@@ -1,7 +1,7 @@
 #pragma once
 
+#include "DistanceField.h"
 #include "VoxelVolume.h"
-#include "distancefield.h"
 #include "poremorphology.h"
 #include <Eigen/Dense>
 #include <iostream>

@@ -1,6 +1,4 @@
-#pragma once
-
-#include "VoxelVolume.h"
+#include "DistanceField.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -13,52 +11,39 @@ namespace fred {
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
-
-struct DistanceField : public VoxelVolume<float> {
-  DistanceField() : distanceFieldCreated(false) {}
-
-  template <typename T>
-  void create_distance_field(Vector3l const &s, const char *filename) {
-    VoxelVolume<T> voxelVolume;
-    voxelVolume.import_raw_volume(s, filename);
-    auto minMaxValue = minmax_element(voxelVolume.voxelValues.begin(),
-                                      voxelVolume.voxelValues.end());
-    float isoValue =
-        (float(*(minMaxValue.first)) + float(*(minMaxValue.second))) / 2.0;
-    create_distance_field(voxelVolume, isoValue);
-  }
-
-  template <typename T>
-  void create_distance_field(Vector3l const &s, const char *filename,
-                             float isoValue) {
-    VoxelVolume<T> voxelVolume;
-    voxelVolume.import_raw_volume(s, filename);
-    create_distance_field(voxelVolume, isoValue);
-  }
-
-  template <typename T>
-  void create_distance_field(VoxelVolume<T> const &voxelVolume, float isoValue);
-
-  void calculate_porosity() const {
-    size_t counter = 0;
-    for (size_t n = 0; n != voxelValues.size(); ++n)
-      if (voxelValues[n] >= 0.5)
-        ++counter;
-
-    cout << endl << float(counter) / float(voxelValues.size()) << endl;
-  }
-
-  bool distanceFieldCreated;
-};
+//------------------------------------------------------------------------------
+template void DistanceField::create_distance_field<float>(
+    Vector3l const &s, const char *filename,
+    std::optional<float> const &isoValue);
+template void DistanceField::create_distance_field<uint8_t>(
+    Vector3l const &s, const char *filename,
+    std::optional<float> const &isoValue);
 //------------------------------------------------------------------------------
 template <typename T>
-void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
-                                          float isoValue) {
+void DistanceField::create_distance_field(
+    Vector3l const &s, const char *filename,
+    std::optional<float> const &isoValue) {
+  VoxelVolume<T> voxelVolume;
+  voxelVolume.import_raw_volume(s, filename);
+  create_distance_field(voxelVolume, isoValue);
+}
+//------------------------------------------------------------------------------
+template <typename T>
+void DistanceField::create_distance_field(
+    VoxelVolume<T> const &voxelVolume, std::optional<float> const &optValue) {
 
   if (!voxelVolume.hasValues) {
     cout << "\nWARNING: Can't create distance field, empty Voxel Volume!\n";
     return;
   }
+
+  float isoValue;
+  if (!optValue) {
+    auto minMax = minmax_element(voxelVolume.voxelValues.begin(),
+                                 voxelVolume.voxelValues.end());
+    isoValue = (float(*(minMax.first)) + float(*(minMax.second))) / 2.0;
+  } else
+    isoValue = *optValue;
 
   high_resolution_clock::time_point tStart = high_resolution_clock::now();
 
@@ -224,6 +209,15 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
   cout << "Duration: "
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
+}
+//------------------------------------------------------------------------------
+void DistanceField::calculate_porosity() const {
+  size_t counter = 0;
+  for (size_t n = 0; n != voxelValues.size(); ++n)
+    if (voxelValues[n] >= 0.5)
+      ++counter;
+
+  cout << endl << float(counter) / float(voxelValues.size()) << endl;
 }
 //------------------------------------------------------------------------------
 } // namespace fred
