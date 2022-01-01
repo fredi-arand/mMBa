@@ -1,9 +1,10 @@
 #pragma once
 
-#include "voxelvolume.h"
+#include "VoxelVolume.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
+#include <iostream>
 #include <limits>
 #include <map>
 //------------------------------------------------------------------------------
@@ -17,7 +18,7 @@ struct DistanceField : public VoxelVolume<float> {
   DistanceField() : distanceFieldCreated(false) {}
 
   template <typename T>
-  void create_distance_field(Vector3l const &s, string filename) {
+  void create_distance_field(Vector3l const &s, const char *filename) {
     VoxelVolume<T> voxelVolume;
     voxelVolume.import_raw_volume(s, filename);
     auto minMaxValue = minmax_element(voxelVolume.voxelValues.begin(),
@@ -28,7 +29,7 @@ struct DistanceField : public VoxelVolume<float> {
   }
 
   template <typename T>
-  void create_distance_field(Vector3l const &s, string filename,
+  void create_distance_field(Vector3l const &s, const char *filename,
                              float isoValue) {
     VoxelVolume<T> voxelVolume;
     voxelVolume.import_raw_volume(s, filename);

@@ -1,13 +1,14 @@
+#include "VoxelVolume.h"
 #include "distancefield.h"
 #include "examplespaper.h"
 #include "importhomberg.h"
 #include "poremorphology.h"
-#include "voxelvolume.h"
+#include "thesis_helpers.h"
 #include <Eigen/Dense>
 #include <chrono>
 #include <fstream>
 #include <iostream>
-#include <thesis_helpers.h>
+#include <string>
 
 using namespace std;
 using namespace fred;
@@ -85,8 +86,10 @@ void thesis8() {
     DistanceField distanceField;
     distanceField.create_distance_field<uint8_t>(
         s,
-        "/Users/arand/from_vgpc32/build/P62/input_morphology/full_foam_" +
-            to_string(i) + ".raw",
+        (string(
+             "/Users/arand/from_vgpc32/build/P62/input_morphology/full_foam_") +
+         to_string(i) + ".raw")
+            .c_str(),
         4.0);
     PoreMorphology poreMorphology(distanceField);
 
@@ -100,12 +103,11 @@ void thesis8() {
     VoxelVolume<uint32_t> morphologyVolume;
     VoxelVolume<uint8_t> stateVolume;
     poreMorphology.create_legacy_volumes(morphologyVolume, stateVolume);
-    morphologyVolume.export_raw(
-        "/Users/arand/from_vgpc32/build/P41/input/8_subvolumes_model/" +
-        to_string(i) + "morphologyVolume.raw");
-    stateVolume.export_raw(
-        "/Users/arand/from_vgpc32/build/P41/input/8_subvolumes_model/" +
-        to_string(i) + "stateVolume.raw");
+    string pathBase =
+        string("/Users/arand/from_vgpc32/build/P41/input/8_subvolumes_model/") +
+        to_string(i);
+    morphologyVolume.export_raw((pathBase + "morphologyVolume.raw").c_str());
+    stateVolume.export_raw((pathBase + "stateVolume.raw").c_str());
   }
 }
 
@@ -144,8 +146,9 @@ void thesis6() {
     DistanceField distanceField;
     distanceField.create_distance_field<uint8_t>(
         s,
-        "../../volumedata/ITV_carbon_foam/subvolumes_2000/vol" + to_string(i) +
-            "_1000_1000_1000_uint8_denoised_connected.raw",
+        (string("../../volumedata/ITV_carbon_foam/subvolumes_2000/vol") +
+         to_string(i) + "_1000_1000_1000_uint8_denoised_connected.raw")
+            .c_str(),
         144.5);
     PoreMorphology poreMorphology(distanceField);
 
@@ -159,10 +162,10 @@ void thesis6() {
     VoxelVolume<uint32_t> morphologyVolume;
     VoxelVolume<uint8_t> stateVolume;
     poreMorphology.create_legacy_volumes(morphologyVolume, stateVolume);
-    morphologyVolume.export_raw("../P41/input/8_subvolumes/" + to_string(i) +
-                                "morphologyVolume.raw");
-    stateVolume.export_raw("../P41/input/8_subvolumes/" + to_string(i) +
-                           "stateVolume.raw");
+
+    string pathBase = string("../P41/input/8_subvolumes/") + to_string(i);
+    morphologyVolume.export_raw((pathBase + "morphologyVolume.raw").c_str());
+    stateVolume.export_raw((pathBase + "stateVolume.raw").c_str());
   }
 }
 
@@ -233,13 +236,12 @@ void thesis3() {
     VoxelVolume<uint8_t> stateVolume;
     poreMorphology.create_legacy_volumes(morphologyVolume, stateVolume);
 
-    distanceField.export_raw("../P41/input/thesis_verification/distanceField_" +
-                             to_string(int(20 * epsilon)) + ".raw");
+    string pathBegin = "../P41/input/thesis_verification/";
+    string pathEnd = to_string(int(20 * epsilon)) + ".raw";
+    distanceField.export_raw((pathBegin + "distanceField_" + pathEnd).c_str());
     morphologyVolume.export_raw(
-        "../P41/input/thesis_verification/morphologyVolume_" +
-        to_string(int(20 * epsilon)) + ".raw");
-    stateVolume.export_raw("../P41/input/thesis_verification/stateVolume_" +
-                           to_string(int(20 * epsilon)) + ".raw");
+        (pathBegin + "morphologyVolume_" + pathEnd).c_str());
+    stateVolume.export_raw((pathBegin + "stateVolume_" + pathEnd).c_str());
   }
 }
 

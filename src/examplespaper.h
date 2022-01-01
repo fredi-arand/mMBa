@@ -1,8 +1,8 @@
 #pragma once
 
+#include "VoxelVolume.h"
 #include "distancefield.h"
 #include "poremorphology.h"
-#include "voxelvolume.h"
 #include <Eigen/Dense>
 #include <iostream>
 #include <utility>

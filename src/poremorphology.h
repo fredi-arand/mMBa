@@ -1,13 +1,14 @@
 #pragma once
 
+#include "VoxelVolume.h"
 #include "distancefield.h"
-#include "voxelvolume.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
 #include <functional>
 #include <list>
 #include <map>

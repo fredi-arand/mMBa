@@ -1,87 +1,15 @@
-#pragma once
-
-#include <Eigen/Dense>
+#include "VoxelVolume.h"
 #include <algorithm>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <numeric>
 #include <omp.h>
-#include <stdio.h>
 #include <string>
-#include <vector>
 //------------------------------------------------------------------------------
 namespace fred {
 //------------------------------------------------------------------------------
 using namespace std;
-using namespace Eigen;
-using Vector3l = Vector3<long>;
-//------------------------------------------------------------------------------
-template <typename T> struct VoxelVolume {
-
-  VoxelVolume()
-      : s(Vector3l(0, 0, 0)), spacing(Vector3l(1, 1, 1)), hasValues(false) {}
-
-  // standard functions to translate between ID and Coord
-  Vector3l vxID_to_vx(size_t vxID) const {
-    return Vector3l(vxID % s(0), (vxID / s(0)) % s(1), vxID / (s(0) * s(1)));
-  }
-
-  // use this to always get vxID even for illegal values of vx
-  size_t vx_to_vxID(Vector3l const &vx) const;
-
-  void set_spacing_and_voxelValues_from_s() {
-    // quickly set spacing and voxelValues for given s
-    spacing << 1, s(0), s(0) * s(1);
-    voxelValues.resize(s.cast<size_t>().prod());
-  }
-
-  // switch x and y
-  void switch_xy();
-
-  // import volume from raw file
-  void import_raw_volume(Vector3l const &s, string filename);
-
-  // binarize volume
-  T binarize_volume(VoxelVolume<bool> &isFict, VoxelVolume<bool> &isPhys) const;
-  void binarize_volume(VoxelVolume<bool> &isFict, VoxelVolume<bool> &isPhys,
-                       T isoValue) const;
-
-  // create from multiplication of two other volumes
-  void create_from_two_volumes(VoxelVolume<T> const &volA,
-                               VoxelVolume<T> const &volB);
-
-  // export volume as pgm stacks
-  void export_pgm_stacks(string foldername) const;
-  void export_raw(string filename) const;
-
-  // export for gnuplot
-  void export_stack_for_gp(long stackID, string filename) const {
-    ofstream myFile(filename);
-    for (long n = stackID * spacing(2); n < (stackID + 1) * spacing(2); ++n) {
-      myFile << n % s(0) << " " << (n / s(0)) % s(1) << " "
-             << float(voxelValues[n]) << endl;
-      if (n % spacing(1) == spacing(1) - 1)
-        myFile << endl;
-    }
-  }
-
-  T operator[](size_t vxID) const { return voxelValues[vxID]; }
-
-  T operator()(Vector3l x) const { return this->operator[](vx_to_vxID(x)); }
-  T operator()(long x0, long x1, long x2) const {
-    return this->operator()(Vector3l(x0, x1, x2));
-  }
-
-  size_t size() { return voxelValues.size(); }
-
-  // voxelValues: value of voxel (i,j,k) is stored at voxelValues(spacing(2)*k +
-  // spacing(1)*j + i) s:           size of voxel grid spacing:     spacing in
-  // 0/1/2-direction
-  vector<T> voxelValues;
-  Vector3l s, spacing;
-  bool hasValues;
-};
-
 //------------------------------------------------------------------------------
 
 template <typename T> void VoxelVolume<T>::switch_xy() {
@@ -218,7 +146,8 @@ void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
 
 //------------------------------------------------------------------------------
 template <typename T>
-void VoxelVolume<T>::import_raw_volume(Vector3l const &s, string filename) {
+void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
+                                       const char *filename) {
   ifstream myFile(filename);
 
   if (!myFile.good()) {
@@ -252,7 +181,7 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s, string filename) {
 //------------------------------------------------------------------------------
 
 template <typename T>
-void VoxelVolume<T>::export_pgm_stacks(string foldername) const {
+void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
   if (!hasValues) {
     cout << "\nWARNING: Can't export pgm stacks, empty Voxel Volume!\n";
     return;
@@ -284,14 +213,15 @@ void VoxelVolume<T>::export_pgm_stacks(string foldername) const {
 
     char numberBuffer[64];
     sprintf(numberBuffer, "%06i", k);
-    ofstream myFile(foldername + "stack" + numberBuffer + ".pgm");
+    ofstream myFile(string(foldername) + "stack" + numberBuffer + ".pgm");
     myFile << "P5\n" << s(0) << " " << s(1) << endl << 255 << endl;
     myFile.write((const char *)currImage.data(), currImage.size());
   }
 }
 
 //------------------------------------------------------------------------------
-template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
+template <typename T>
+void VoxelVolume<T>::export_raw(const char *filename) const {
 
   ofstream myFile(filename);
 
@@ -301,8 +231,23 @@ template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
     myFile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
 }
 //------------------------------------------------------------------------------
+template <typename T>
+void VoxelVolume<T>::export_stack_for_gp(long stackID,
+                                         const char *filename) const {
+  std::ofstream myFile(filename);
+  for (long n = stackID * spacing(2); n < (stackID + 1) * spacing(2); ++n) {
+    myFile << n % s(0) << " " << (n / s(0)) % s(1) << " "
+           << float(voxelValues[n]) << std::endl;
+    if (n % spacing(1) == spacing(1) - 1)
+      myFile << std::endl;
+  }
+}
+//------------------------------------------------------------------------------
 template struct VoxelVolume<uint8_t>;
 template struct VoxelVolume<bool>;
 template struct VoxelVolume<float>;
+template struct VoxelVolume<int>;
+template struct VoxelVolume<uint32_t>;
 //------------------------------------------------------------------------------
 } // namespace fred
+//------------------------------------------------------------------------------

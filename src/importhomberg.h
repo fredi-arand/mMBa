@@ -1,6 +1,6 @@
 #pragma once
 
-#include "voxelvolume.h"
+#include "VoxelVolume.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <fstream>
