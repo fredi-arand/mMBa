@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Eigen/Dense"
 #include "distancefield.h"
 #include "poremorphology.h"
 #include "voxelvolume.h"
+#include <Eigen/Dense>
 #include <iostream>
 #include <utility>
 //------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ using namespace Eigen;
 // VoxelVolume<int> two_circles()
 //{
 //   VoxelVolume<int> image;
-//   image.s = Vector3i(9,13,1);
+//   image.s = Vector3l(9,13,1);
 //   image.set_spacing_and_voxelValues_from_s();
 //   image.voxelValues.clear();
 //   image.voxelValues.resize(image.s.cast<size_t>().prod(),0);
@@ -56,7 +56,7 @@ using namespace Eigen;
 // VoxelVolume<int> two_circles_one_box()
 //{
 //   VoxelVolume<int> image;
-//   image.s = Vector3i(16,24,1);
+//   image.s = Vector3l(16,24,1);
 //   image.set_spacing_and_voxelValues_from_s();
 //   image.voxelValues.clear();
 //   image.voxelValues.resize(image.s.cast<size_t>().prod(),0);
@@ -105,7 +105,7 @@ using namespace Eigen;
 //  ofstream centralCicles("output/myCircles");
 //  for(size_t j=0; j<distanceField.s(1); ++j)
 //  {
-//    Vector3i vx(4,j,0);
+//    Vector3l vx(4,j,0);
 //    centralCicles << vx(0) << " " << vx(1) << " " <<
 //    distanceField[distanceField.vx_to_vxID(vx)] << endl;
 //  }
@@ -126,7 +126,7 @@ using namespace Eigen;
 //  ofstream centralCicles("output/myCircles");
 //  for(size_t j=0; j<distanceField.s(1); ++j)
 //  {
-//    Vector3i vx(5,j,0);
+//    Vector3l vx(5,j,0);
 //    centralCicles << vx(0) << " " << vx(1) << " " <<
 //    distanceField[distanceField.vx_to_vxID(vx)] << endl;
 //  }

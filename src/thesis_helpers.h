@@ -10,13 +10,14 @@ namespace fred {
 
 //------------------------------------------------------------------------------
 
-void gnuplot_distance_field_and_maximal_balls(
-    string const &folderName, DistanceField const &distanceField) {
+inline void
+gnuplot_distance_field_and_maximal_balls(string const &folderName,
+                                         DistanceField const &distanceField) {
 
   ofstream file_gp(folderName + "distance_field.txt");
   set<pair<float, pair<unsigned, unsigned>>> maximalBalls;
 
-  Vector3i const &s = distanceField.s;
+  Vector3l const &s = distanceField.s;
 
   srand(0);
   map<size_t, float> color;
@@ -26,7 +27,7 @@ void gnuplot_distance_field_and_maximal_balls(
   for (int i = 0; i < s(0); ++i)
     for (int j = 0; j < s(1); ++j) {
       file_gp << i << " " << j << " " << distanceField(i, j, 0) << " "
-              << color.at(distanceField.vx_to_vxID(Vector3i(i, j, 0))) << endl;
+              << color.at(distanceField.vx_to_vxID(Vector3l(i, j, 0))) << endl;
       if (distanceField(i, j, 0) == 0.0)
         continue;
       maximalBalls.insert(
@@ -41,7 +42,7 @@ void gnuplot_distance_field_and_maximal_balls(
     unsigned i = (it->second).second;
     i = s(0) - i;
     file2_gp << i << " " << j << " " << d << " "
-             << color.at(distanceField.vx_to_vxID(Vector3i(i, j, 0))) << endl;
+             << color.at(distanceField.vx_to_vxID(Vector3l(i, j, 0))) << endl;
   }
 }
 
@@ -51,7 +52,7 @@ template <typename T>
 void gnuplot_volume_to_images(string const &folderName,
                               VoxelVolume<T> const &voxelVolume) {
 
-  Vector3i const &s = voxelVolume.s;
+  Vector3l const &s = voxelVolume.s;
 
   for (int k = 0; k < s(2); ++k) {
     ofstream myFile(folderName + "stack_" + to_string(k) + ".txt");
@@ -64,33 +65,33 @@ void gnuplot_volume_to_images(string const &folderName,
 
 //------------------------------------------------------------------------------
 
-uint32_t get_parent(uint32_t const &morphologyValue) {
+inline uint32_t get_parent(uint32_t const &morphologyValue) {
   static uint32_t morphologyReader = (~0) - (1 << 31) - (1 << 30);
   return morphologyReader & morphologyValue;
 }
 
 //------------------------------------------------------------------------------
 
-uint32_t get_flag(uint32_t const &morphologyValue) {
+inline uint32_t get_flag(uint32_t const &morphologyValue) {
   static uint32_t flagReader = (1 << 31) + (1 << 30);
   return flagReader & morphologyValue;
 }
 
 //------------------------------------------------------------------------------
 
-uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
+static constexpr uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
     throatValue{uint32_t(1) << 31},
     backgroundValue{(uint32_t(1) << 31) + (uint32_t(1) << 30)};
 
-unsigned fileCounter = 0;
+static unsigned fileCounter = 0;
 
 //------------------------------------------------------------------------------
 
-void gnuplot_palette_file(string fileName,
-                          PoreMorphology const &poreMorphology) {
+inline void gnuplot_palette_file(string fileName,
+                                 PoreMorphology const &poreMorphology) {
 
   auto const &morphologyVolume = poreMorphology.morphologyVolume;
-  Vector3i const &s = morphologyVolume.s;
+  Vector3l const &s = morphologyVolume.s;
   auto const &parentToVoxelIndex = poreMorphology.parentToVoxelIndex;
 
   srand(0);
@@ -104,7 +105,7 @@ void gnuplot_palette_file(string fileName,
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
-    Vector3i position = morphologyVolume.vxID_to_vx(voxelIndex);
+    Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
     if (flag == backgroundValue) {
       image_palette_file << position.transpose() << " -1.0\n";
@@ -130,16 +131,17 @@ void gnuplot_palette_file(string fileName,
 
 //------------------------------------------------------------------------------
 
-void update_neighbors_box(DistanceField const &distanceField,
-                          VoxelVolume<uint32_t> &morphologyVolume,
-                          size_t const &voxelIndex_i,
-                          map<uint32_t, size_t> const &parentToVoxelIndex) {
+inline void
+update_neighbors_box(DistanceField const &distanceField,
+                     VoxelVolume<uint32_t> &morphologyVolume,
+                     size_t const &voxelIndex_i,
+                     map<uint32_t, size_t> const &parentToVoxelIndex) {
 
   auto const &s = morphologyVolume.s;
 
   double padding = 0.5;
 
-  Vector3i const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
+  Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
 
   uint32_t const &morphologyValue_i = morphologyVolume[voxelIndex_i];
   uint32_t parent_i = get_parent(morphologyValue_i);
@@ -154,8 +156,8 @@ void update_neighbors_box(DistanceField const &distanceField,
         if (K == 0 && J == 0 && I == 0)
           continue;
 
-        Vector3i const voxelCoordinate_j =
-            voxelCoordinate_i + Vector3i(I, J, K);
+        Vector3l const voxelCoordinate_j =
+            voxelCoordinate_i + Vector3l(I, J, K);
         if ((voxelCoordinate_j.array() < 0).any() ||
             (voxelCoordinate_j.array() >= s.array()).any())
           continue;
@@ -168,7 +170,8 @@ void update_neighbors_box(DistanceField const &distanceField,
         size_t const voxelIndex_j =
             morphologyVolume.vx_to_vxID(voxelCoordinate_j);
 
-        uint32_t &morphologyValue_j = morphologyVolume[voxelIndex_j];
+        uint32_t &morphologyValue_j =
+            morphologyVolume.voxelValues[voxelIndex_j];
         uint32_t flag_j = get_flag(morphologyValue_j);
         uint32_t parent_j = get_parent(morphologyValue_j);
 
@@ -242,7 +245,7 @@ void update_neighbors_box(DistanceField const &distanceField,
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
-    Vector3i position = morphologyVolume.vxID_to_vx(voxelIndex);
+    Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
     if (flag == initValue) {
       if (parentToVoxelIndex.count(parent) == 0)
@@ -272,9 +275,9 @@ void update_neighbors_box(DistanceField const &distanceField,
              << distanceField[voxelIndex_i] << " "
              << color.at(parentToVoxelIndex.at(parent_i)) << endl;
 
-  vector<Vector3i> colors2;
+  vector<Vector3l> colors2;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
-    colors2.push_back(Vector3i(rand() % 255, rand() % 255, rand() % 255));
+    colors2.push_back(Vector3l(rand() % 255, rand() % 255, rand() % 255));
 
   ofstream image_file("thesis/steps/" + to_string(fileCounter) + "img.txt");
 
@@ -283,7 +286,7 @@ void update_neighbors_box(DistanceField const &distanceField,
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
-    Vector3i position = morphologyVolume.vxID_to_vx(voxelIndex);
+    Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
     if (flag == backgroundValue) {
       image_file << position.transpose() << " 255 255 255 0\n";
@@ -316,7 +319,7 @@ void update_neighbors_box(DistanceField const &distanceField,
     uint32_t morphologyValue = morphologyVolume[voxelIndex];
     uint32_t flag = get_flag(morphologyValue);
     uint32_t parent = get_parent(morphologyValue);
-    Vector3i position = morphologyVolume.vxID_to_vx(voxelIndex);
+    Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
     if (flag == backgroundValue) {
       image_palette_file << position.transpose() << " -1.0\n";
@@ -344,13 +347,13 @@ void update_neighbors_box(DistanceField const &distanceField,
 
 //------------------------------------------------------------------------------
 
-void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
-                     float rMinBall) {
+inline void mb_step_by_step(DistanceField const &distanceField,
+                            float rMinMaster, float rMinBall) {
 
   uint32_t parentCounter{0};
   map<uint32_t, size_t> parentToVoxelIndex;
 
-  Vector3i const &s = distanceField.s;
+  Vector3l const &s = distanceField.s;
 
   cout << "\nCreating Pore Morphology:\n";
 
@@ -368,7 +371,7 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
       ++voidVoxels;
-      morphologyVolume[n] = initValue;
+      morphologyVolume.voxelValues[n] = initValue;
     }
 
   if (voidVoxels == 0) {
@@ -448,7 +451,7 @@ void mb_step_by_step(DistanceField const &distanceField, float rMinMaster,
       //    if(roundedR_i<omp_get_num_threads())
       //      omp_set_num_threads(1);
 
-      uint32_t &morphologyValue_i = morphologyVolume[voxelIndex_i];
+      uint32_t &morphologyValue_i = morphologyVolume.voxelValues[voxelIndex_i];
       uint32_t flag_i = get_flag(morphologyValue_i);
       uint32_t parent_i = get_parent(morphologyValue_i);
 

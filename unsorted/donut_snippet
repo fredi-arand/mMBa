@@ -1,8 +1,8 @@
   VoxelVolume<uint8_t> donut;
-  donut.s=Vector3i(32,32,16);
+  donut.s=Vector3l(32,32,16);
   donut.set_spacing_and_voxelValues_from_s();
   donut.voxelValues.clear();
-  Vector3i s = donut.s;
+  Vector3l s = donut.s;
   donut.voxelValues.resize(donut.s.cast<size_t>().prod(),0);
   int superSampling = 16;
   float R = 10;
@@ -27,7 +27,7 @@
                  -r*r<0)
                 ++hits;
             }
-        donut[donut.vx_to_vxID(Vector3i(i,j,k))]=255*float(hits)/(8*superSampling*superSampling*superSampling);
+        donut[donut.vx_to_vxID(Vector3l(i,j,k))]=255*float(hits)/(8*superSampling*superSampling*superSampling);
       }
 
   donut.hasValues = true;

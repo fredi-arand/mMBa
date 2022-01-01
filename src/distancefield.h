@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Eigen/Dense"
 #include "voxelvolume.h"
+#include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
 #include <limits>
@@ -15,10 +15,9 @@ using namespace Eigen;
 
 struct DistanceField : public VoxelVolume<float> {
   DistanceField() : distanceFieldCreated(false) {}
-  //    ~DistanceField() { cout << "\nbye bye\n";}
 
   template <typename T>
-  void create_distance_field(Vector3i const &s, string filename) {
+  void create_distance_field(Vector3l const &s, string filename) {
     VoxelVolume<T> voxelVolume;
     voxelVolume.import_raw_volume(s, filename);
     auto minMaxValue = minmax_element(voxelVolume.voxelValues.begin(),
@@ -29,7 +28,7 @@ struct DistanceField : public VoxelVolume<float> {
   }
 
   template <typename T>
-  void create_distance_field(Vector3i const &s, string filename,
+  void create_distance_field(Vector3l const &s, string filename,
                              float isoValue) {
     VoxelVolume<T> voxelVolume;
     voxelVolume.import_raw_volume(s, filename);
@@ -93,7 +92,7 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
       for (int k = 0; k < s((dim + 2) % 3); ++k)
         for (int j = 0; j < s((dim + 1) % 3); ++j) {
 
-          Vector3i vx(0, 0, 0);
+          Vector3l vx(0, 0, 0);
           vx((dim + 2) % 3) = k;
           vx((dim + 1) % 3) = j;
           vector<size_t> vxIDs;
@@ -207,7 +206,7 @@ void DistanceField::create_distance_field(VoxelVolume<T> const &voxelVolume,
           // end of volume iteration in dim-direction
 
         // update minDistanceField
-#pragma omp parallel for
+#pragma omp parallel for // NOLINT
     for (size_t n = 0; n < testDistanceField.voxelValues.size(); ++n)
       if (testDistanceField.voxelValues[n] < voxelValues[n])
         voxelValues[n] = testDistanceField.voxelValues[n];

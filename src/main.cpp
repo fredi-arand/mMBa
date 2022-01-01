@@ -1,9 +1,9 @@
-#include "Eigen/Dense"
 #include "distancefield.h"
 #include "examplespaper.h"
 #include "importhomberg.h"
 #include "poremorphology.h"
 #include "voxelvolume.h"
+#include <Eigen/Dense>
 #include <chrono>
 #include <fstream>
 #include <iostream>
@@ -40,7 +40,7 @@ int main(int, char **) {
 }
 //------------------------------------------------------------------------------
 void berea() {
-  Vector3i s(400, 400, 400);
+  Vector3l s(400, 400, 400);
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(s, "../../Berea.raw");
   PoreMorphology poreMorphology(distanceField);
@@ -52,7 +52,7 @@ void berea() {
 //------------------------------------------------------------------------------
 
 void thesis9() {
-  Vector3i s(1000, 1000, 1000);
+  Vector3l s(1000, 1000, 1000);
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
@@ -79,7 +79,7 @@ void thesis9() {
 //------------------------------------------------------------------------------
 
 void thesis8() {
-  Vector3i s(1000, 1000, 1000);
+  Vector3l s(1000, 1000, 1000);
 
   for (int i = 0; i < 8; ++i) {
     DistanceField distanceField;
@@ -112,7 +112,7 @@ void thesis8() {
 //------------------------------------------------------------------------------
 
 void thesis7() {
-  Vector3i s(1000, 1000, 1000);
+  Vector3l s(1000, 1000, 1000);
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
@@ -138,7 +138,7 @@ void thesis7() {
 //------------------------------------------------------------------------------
 
 void thesis6() {
-  Vector3i s(1000, 1000, 1000);
+  Vector3l s(1000, 1000, 1000);
 
   for (int i = 0; i < 8; ++i) {
     DistanceField distanceField;
@@ -169,7 +169,7 @@ void thesis6() {
 //------------------------------------------------------------------------------
 
 void thesis5() {
-  Vector3i s(128, 128, 128);
+  Vector3l s(128, 128, 128);
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
       s, "../P57/artificial_128_128_128_uint8.raw", 127.5);
@@ -192,7 +192,7 @@ void thesis5() {
 //------------------------------------------------------------------------------
 
 void thesis4() {
-  Vector3i s(512, 512, 512);
+  Vector3l s(512, 512, 512);
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
       s, "../P55/hcp_512_512_512_uint8.raw", 127.5);
@@ -215,7 +215,7 @@ void thesis4() {
 
 void thesis3() {
 
-  Vector3i s(500, 500, 500);
+  Vector3l s(500, 500, 500);
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
       s, "../P54/random_balls_downsampled_500_500_500_uint8_t.raw", 127.5);
@@ -248,7 +248,7 @@ void thesis3() {
 void carbonFoamPaper8() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(750, 750, 750),
+      Vector3l(750, 750, 750),
       "../../volumedata/ITV_carbon_foam/artificial_large_and_small_pores/"
       "eroded_dilated_gauss_750_750_750_8bit.raw",
       127.5);
@@ -275,7 +275,7 @@ void carbonFoamPaper8() {
 //------------------------------------------------------------------------------
 
 void carbonFoamPaper7() {
-  Vector3i const s(750, 750, 750);
+  Vector3l const s(750, 750, 750);
 
   VoxelVolume<uint8_t> voxelVolume;
   voxelVolume.import_raw_volume(
@@ -310,7 +310,7 @@ void carbonFoamPaper7() {
 //------------------------------------------------------------------------------
 
 void carbonFoamPaper6() {
-  Vector3i const s(750, 750, 750);
+  Vector3l const s(750, 750, 750);
 
   VoxelVolume<uint8_t> voxelVolume;
   //  voxelVolume.import_raw_volume(s,
@@ -349,9 +349,9 @@ void carbonFoamPaper6() {
 void krakowska1() {
   DistanceField distanceField;
   distanceField.create_distance_field<float>(
-      Vector3i(1500, 1500, 400), "../../volumedata/paulina/12888_1.vol", 23.0);
+      Vector3l(1500, 1500, 400), "../../volumedata/paulina/12888_1.vol", 23.0);
   //  distanceField.create_distance_field<uint8_t>(
-  //        Vector3i(750,750,750),"carbonFoam_denoised_connected_750_750_750.raw",120);
+  //        Vector3l(750,750,750),"carbonFoam_denoised_connected_750_750_750.raw",120);
 
   PoreMorphology poreMorphology(distanceField);
   poreMorphology.create_pore_morphology(1.0, 0.0);
@@ -367,21 +367,21 @@ void thesis2() {
 
   VoxelVolume<uint8_t> coverageRepresentation0;
   coverageRepresentation0.import_raw_volume(
-      Vector3i(128, 128, 1),
+      Vector3l(128, 128, 1),
       "../../volumedata/miniVolume3/blub_128_128_1_uint8.raw");
 
   gnuplot_volume_to_images("thesis/other_", coverageRepresentation0);
 
   VoxelVolume<uint8_t> coverageRepresentation;
   coverageRepresentation.import_raw_volume(
-      Vector3i(64, 64, 1),
+      Vector3l(64, 64, 1),
       "../../volumedata/miniVolume3/blub_64_64_1_uint8.raw");
 
   gnuplot_volume_to_images("thesis/", coverageRepresentation);
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(64, 64, 1),
+      Vector3l(64, 64, 1),
       "../../volumedata/miniVolume3/blub_64_64_1_uint8.raw", 127.5);
 
   gnuplot_distance_field_and_maximal_balls("thesis/", distanceField);
@@ -405,7 +405,7 @@ void thesis1() {
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(8, 8, 1), "../../source/thesis/chapter_2/image_8_8_1_uint8.raw",
+      Vector3l(8, 8, 1), "../../source/thesis/chapter_2/image_8_8_1_uint8.raw",
       8.0);
 
   gnuplot_distance_field_and_maximal_balls("../../source/thesis/chapter_2/",
@@ -417,7 +417,7 @@ void thesis1() {
 void carbonFoamPaper5() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(750, 750, 750),
+      Vector3l(750, 750, 750),
       "../../volumedata/ITV_carbon_foam/artificial_large_and_small_pores/"
       "750cubed_8bit.raw",
       127.5);
@@ -445,7 +445,7 @@ void carbonFoamPaper5() {
 void carbonFoamPaper5a() {
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(750, 750, 750),
+      Vector3l(750, 750, 750),
       "../../volumedata/ITV_carbon_foam/artificial_large_and_small_pores/"
       "artificial_foam_downsampled.raw",
       127.5);
@@ -473,7 +473,7 @@ void carbonFoamPaper5a() {
 void carbonFoamPaper4() {
 
   DistanceField distanceField;
-  distanceField.create_distance_field<float>(Vector3i(750, 750, 750),
+  distanceField.create_distance_field<float>(Vector3l(750, 750, 750),
                                              "../P42/upsampled2.raw", 120.0);
 
   PoreMorphology poreMorphology(distanceField);
@@ -503,7 +503,7 @@ void carbonFoamPaper3() {
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(750, 750, 750),
+      Vector3l(750, 750, 750),
       "../P39/carbonFoam1500_downsampled_denoised_connected", 120.0);
 
   PoreMorphology poreMorphology(distanceField);
@@ -531,7 +531,7 @@ void carbonFoamPaper3() {
 void carbonFoamPaper2() {
 
   DistanceField distanceField;
-  distanceField.create_distance_field<float>(Vector3i(750, 750, 750),
+  distanceField.create_distance_field<float>(Vector3l(750, 750, 750),
                                              "../P42/upsampled.raw", 120.0);
 
   PoreMorphology poreMorphology(distanceField);
@@ -561,7 +561,7 @@ void carbonFoamPaper1() {
 
   DistanceField distanceField;
   distanceField.create_distance_field<uint8_t>(
-      Vector3i(750, 750, 750), "carbonFoam_denoised_connected_750_750_750.raw",
+      Vector3l(750, 750, 750), "carbonFoam_denoised_connected_750_750_750.raw",
       120);
 
   PoreMorphology poreMorphology(distanceField);

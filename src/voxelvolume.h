@@ -14,24 +14,23 @@ namespace fred {
 //------------------------------------------------------------------------------
 using namespace std;
 using namespace Eigen;
-
+using Vector3l = Vector3<long>;
 //------------------------------------------------------------------------------
-
 template <typename T> struct VoxelVolume {
 
   VoxelVolume()
-      : s(Vector3i(0, 0, 0)), spacing(Vector3i(1, 1, 1)), hasValues(false) {}
+      : s(Vector3l(0, 0, 0)), spacing(Vector3l(1, 1, 1)), hasValues(false) {}
 
   // standard functions to translate between ID and Coord
-  Vector3i vxID_to_vx(size_t vxID) const {
-    return Vector3i(vxID % s(0), (vxID / s(0)) % s(1), vxID / (s(0) * s(1)));
+  Vector3l vxID_to_vx(size_t vxID) const {
+    return Vector3l(vxID % s(0), (vxID / s(0)) % s(1), vxID / (s(0) * s(1)));
   }
 
   // use this to always get vxID even for illegal values of vx
-  size_t vx_to_vxID(Vector3i const &vx) const;
+  size_t vx_to_vxID(Vector3l const &vx) const;
 
-  // quickly set spacing and voxelValues for given s
   void set_spacing_and_voxelValues_from_s() {
+    // quickly set spacing and voxelValues for given s
     spacing << 1, s(0), s(0) * s(1);
     voxelValues.resize(s.cast<size_t>().prod());
   }
@@ -40,7 +39,7 @@ template <typename T> struct VoxelVolume {
   void switch_xy();
 
   // import volume from raw file
-  void import_raw_volume(Vector3i const &s, string filename);
+  void import_raw_volume(Vector3l const &s, string filename);
 
   // binarize volume
   T binarize_volume(VoxelVolume<bool> &isFict, VoxelVolume<bool> &isPhys) const;
@@ -56,27 +55,21 @@ template <typename T> struct VoxelVolume {
   void export_raw(string filename) const;
 
   // export for gnuplot
-  void export_stack_for_gp(size_t stackID, string filename) const {
-    ofstream myfile(filename);
-    for (size_t n = stackID * spacing(2); n < (stackID + 1) * spacing(2); ++n) {
-      myfile << n % s(0) << " " << (n / s(0)) % s(1) << " "
+  void export_stack_for_gp(long stackID, string filename) const {
+    ofstream myFile(filename);
+    for (long n = stackID * spacing(2); n < (stackID + 1) * spacing(2); ++n) {
+      myFile << n % s(0) << " " << (n / s(0)) % s(1) << " "
              << float(voxelValues[n]) << endl;
       if (n % spacing(1) == spacing(1) - 1)
-        myfile << endl;
+        myFile << endl;
     }
   }
 
   T operator[](size_t vxID) const { return voxelValues[vxID]; }
-  T &operator[](size_t vxID) { return voxelValues[vxID]; }
 
-  T operator()(Vector3i x) const { return this->operator[](vx_to_vxID(x)); }
+  T operator()(Vector3l x) const { return this->operator[](vx_to_vxID(x)); }
   T operator()(long x0, long x1, long x2) const {
-    return this->operator()(Vector3i(x0, x1, x2));
-  }
-
-  T &operator()(Vector3i x) { return this->operator[](vx_to_vxID(x)); }
-  T &operator()(long x0, long x1, long x2) {
-    return this->operator()(Vector3i(x0, x1, x2));
+    return this->operator()(Vector3l(x0, x1, x2));
   }
 
   size_t size() { return voxelValues.size(); }
@@ -85,7 +78,7 @@ template <typename T> struct VoxelVolume {
   // spacing(1)*j + i) s:           size of voxel grid spacing:     spacing in
   // 0/1/2-direction
   vector<T> voxelValues;
-  Vector3i s, spacing;
+  Vector3l s, spacing;
   bool hasValues;
 };
 
@@ -96,12 +89,12 @@ template <typename T> void VoxelVolume<T>::switch_xy() {
   switchedVolume.voxelValues.clear();
   switchedVolume.voxelValues.resize(s.cast<size_t>().prod());
 
-  Vector3i xi;
+  Vector3l xi;
   size_t i = 0;
   for (xi(2) = 0; xi(2) < s(2); ++xi(2))
     for (xi(0) = 0; xi(0) < s(0); ++xi(0))
       for (xi(1) = 0; xi(1) < s(1); ++xi(1), ++i)
-        switchedVolume[i] = voxelValues[xi.dot(spacing)];
+        switchedVolume.voxelValues[i] = voxelValues[xi.dot(spacing)];
 
   voxelValues = switchedVolume.voxelValues;
 }
@@ -109,11 +102,11 @@ template <typename T> void VoxelVolume<T>::switch_xy() {
 //------------------------------------------------------------------------------
 
 template <typename T>
-size_t VoxelVolume<T>::vx_to_vxID(Vector3i const &vx) const {
+size_t VoxelVolume<T>::vx_to_vxID(Vector3l const &vx) const {
   if ((vx.array() >= 0).all() && (vx.array() < s.array()).all())
     return spacing.dot(vx);
 
-  Vector3i vxNew = vx;
+  Vector3l vxNew = vx;
   for (int dim = 0; dim < 3; ++dim) {
     if (vxNew(dim) < 0) {
       vxNew(dim) = 0;
@@ -150,7 +143,7 @@ void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
   cout << "\nCreating Binary Volumes ...\n";
 
   isFict.s = s.array() - 1;
-  isFict.spacing = Vector3i(1, isFict.s(0), isFict.s(0) * isFict.s(1));
+  isFict.spacing = Vector3l(1, isFict.s(0), isFict.s(0) * isFict.s(1));
   isFict.voxelValues.resize(isFict.s.cast<size_t>().prod());
 
   isPhys.s = isFict.s;
@@ -168,14 +161,14 @@ void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
     {
 
 #pragma omp for
-      for (size_t k = runID; k < s(2) - 1; k += 2) {
-        size_t vxID = k * isFict.spacing(2);
+      for (long k = runID; k < s(2) - 1; k += 2) {
+        size_t vxID = static_cast<size_t>(isFict.spacing(2)) * k;
 
         for (int j = 0; j < s(1) - 1; ++j) {
           vector<size_t> checkCube(8, 0);
           for (int n = 0; n < 8; ++n)
             checkCube[n] =
-                spacing.dot(Vector3i(n % 2, j + (n / 2) % 2, k + n / 4));
+                spacing.dot(Vector3l(n % 2, j + (n / 2) % 2, k + n / 4));
 
           for (int i = 0; i < s(0) - 1; ++i) {
             size_t currSum = 0;
@@ -224,12 +217,11 @@ void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
 }
 
 //------------------------------------------------------------------------------
-
 template <typename T>
-void VoxelVolume<T>::import_raw_volume(Vector3i const &s, string filename) {
-  ifstream myfile(filename);
+void VoxelVolume<T>::import_raw_volume(Vector3l const &s, string filename) {
+  ifstream myFile(filename);
 
-  if (!myfile.good()) {
+  if (!myFile.good()) {
     cout << "\nWARNING: Can't import volume, no file found!\n";
     return;
   }
@@ -242,13 +234,14 @@ void VoxelVolume<T>::import_raw_volume(Vector3i const &s, string filename) {
   cout << "\nImporting Raw Volume from \"" << filename << "\" ...\n";
 
   this->s = s;
-  spacing = Vector3i(1, s(0), s(0) * s(1));
+  spacing = Vector3l(1, s(0), s(0) * s(1));
 
   voxelValues.resize(s.cast<int32_t>().prod());
 
-  myfile.read((char *)&voxelValues[0], sizeof(T) * voxelValues.size());
+  if constexpr (!is_same_v<T, bool>)
+    myFile.read((char *)&voxelValues[0], sizeof(T) * voxelValues.size());
 
-  if (myfile.eof() || myfile.peek() != EOF) {
+  if (myFile.eof() || myFile.peek() != EOF) {
     cout << "\nWARNING: Couldnt't import volume, error while reading in file\n";
     return;
   }
@@ -283,29 +276,33 @@ void VoxelVolume<T>::export_pgm_stacks(string foldername) const {
     for (int j = 0; j < s(1); ++j) {
       auto pxIt = currImage.begin() + spacing(1) * (s(1) - 1 - j);
 
-      for (auto vxIt = voxelValues.begin() + spacing.dot(Vector3i(0, j, k));
-           vxIt != voxelValues.begin() + spacing.dot(Vector3i(0, j + 1, k));
+      for (auto vxIt = voxelValues.begin() + spacing.dot(Vector3l(0, j, k));
+           vxIt != voxelValues.begin() + spacing.dot(Vector3l(0, j + 1, k));
            ++vxIt, ++pxIt)
         *pxIt = ((*vxIt - minElement) * 255) / (maxElement - minElement);
     }
 
     char numberBuffer[64];
     sprintf(numberBuffer, "%06i", k);
-    ofstream myfile(foldername + "stack" + numberBuffer + ".pgm");
-    myfile << "P5\n" << s(0) << " " << s(1) << endl << 255 << endl;
-    myfile.write((const char *)currImage.data(), currImage.size());
+    ofstream myFile(foldername + "stack" + numberBuffer + ".pgm");
+    myFile << "P5\n" << s(0) << " " << s(1) << endl << 255 << endl;
+    myFile.write((const char *)currImage.data(), currImage.size());
   }
 }
 
 //------------------------------------------------------------------------------
-
 template <typename T> void VoxelVolume<T>::export_raw(string filename) const {
 
-  ofstream myfile(filename);
+  ofstream myFile(filename);
 
   cout << "\nExporting Raw Volume to \"" << filename << "\" ...\n";
 
-  myfile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
+  if constexpr (!is_same_v<T, bool>)
+    myFile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
 }
+//------------------------------------------------------------------------------
+template struct VoxelVolume<uint8_t>;
+template struct VoxelVolume<bool>;
+template struct VoxelVolume<float>;
 //------------------------------------------------------------------------------
 } // namespace fred

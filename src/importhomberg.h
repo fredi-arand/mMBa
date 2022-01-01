@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Eigen/Dense"
 #include "voxelvolume.h"
+#include <Eigen/Dense>
 #include <algorithm>
 #include <fstream>
 #include <map>
@@ -13,11 +13,11 @@ namespace fred {
 using namespace std;
 using namespace Eigen;
 
-VoxelVolume<uint8_t> create_coverage_rep(string path) {
+inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
-  // initalize: voxel resolution, volume covered: [A, A+dAB], subcell points
+  // initialize: voxel resolution, volume covered: [A, A+dAB], subcell points
   long int resolution1D = 512;
-  Vector3i resolution(resolution1D, resolution1D, resolution1D);
+  Vector3l resolution(resolution1D, resolution1D, resolution1D);
   Vector3f A(-0.5, -0.5, -0.5);
   Vector3f dAB(resolution.cast<float>());
   size_t subcellPoints = 8;
@@ -27,7 +27,7 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
   fineVolume.s = resolution * subcellPoints;
   //  fineVolume.set_spacing_and_voxelValues_from_s();
   fineVolume.spacing =
-      Vector3i(1, size_t(fineVolume.s(0)),
+      Vector3l(1, size_t(fineVolume.s(0)),
                size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)));
   fineVolume.voxelValues.clear();
   fineVolume.voxelValues.resize(size_t(fineVolume.s(0)) *
@@ -40,10 +40,10 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
   // import points from path
   vector<Vector3f> sphereCenters;
   vector<float> sphereRadii;
-  ifstream myfile(path);
+  ifstream myFile(path);
   size_t dummyCounter = 0;
   string currentLine;
-  while (getline(myfile, currentLine)) {
+  while (getline(myFile, currentLine)) {
 
     if (currentLine.at(0) == '#' || currentLine.size() == 0)
       continue;
@@ -81,22 +81,22 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
     Vector3f mFine = A + float(subcellPoints) * (sphereCenters[sphereID] - A);
 
     // bounds for check
-    Vector3i xFineMin(ceil(mFine(0) - rFine), ceil(mFine(1) - rFine),
+    Vector3l xFineMin(ceil(mFine(0) - rFine), ceil(mFine(1) - rFine),
                       ceil(mFine(2) - rFine));
-    Vector3i xFineMax(floor(mFine(0) + rFine), floor(mFine(1) + rFine),
+    Vector3l xFineMax(floor(mFine(0) + rFine), floor(mFine(1) + rFine),
                       floor(mFine(2) + rFine));
 
-    // rsquared
+    // rSquared
     float rFineSquared = rFine * rFine;
 
-    long int KMin = max(xFineMin(2), 0);
-    long int KMax = min(xFineMax(2), fineVolume.s(2) - 1);
+    long KMin = max(xFineMin(2), 0l);
+    long KMax = min(xFineMax(2), fineVolume.s(2) - 1);
     if (KMax - KMin > 64) {
 #pragma omp parallel for
-      for (long int K = KMin; K <= KMax; ++K)
-        for (long int J = max(xFineMin(1), 0);
+      for (long K = KMin; K <= KMax; ++K)
+        for (long J = max(xFineMin(1), 0l);
              J <= min(xFineMax(1), fineVolume.s(1) - 1); ++J)
-          for (long int I = max(xFineMin(0), 0);
+          for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
               fineVolume
@@ -105,10 +105,10 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
                                size_t(K) * size_t(fineVolume.spacing(2))] =
                   true;
     } else {
-      for (long int K = KMin; K <= KMax; ++K)
-        for (long int J = max(xFineMin(1), 0);
+      for (long K = KMin; K <= KMax; ++K)
+        for (long J = max(xFineMin(1), 0l);
              J <= min(xFineMax(1), fineVolume.s(1) - 1); ++J)
-          for (long int I = max(xFineMin(0), 0);
+          for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
               fineVolume
@@ -139,7 +139,7 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
   for (size_t vxID = 0; vxID < voxelVolume.voxelValues.size(); ++vxID) {
     size_t counts = 0;
 
-    Vector3i vx0Sub = subcellPoints * voxelVolume.vxID_to_vx(vxID);
+    Vector3l vx0Sub = subcellPoints * voxelVolume.vxID_to_vx(vxID);
 
     for (size_t K = 0; K < subcellPoints; ++K)
       for (size_t J = 0; J < subcellPoints; ++J)
@@ -149,7 +149,7 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
                          size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
                          size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
 
-    voxelVolume[vxID] = (counts * 255) / possibleCounts;
+    voxelVolume.voxelValues[vxID] = (counts * 255) / possibleCounts;
 
     //    if(vxID%1024 == 0)
     //      cout << "\r" << float(vxID+1)*100.0/voxelVolume.voxelValues.size()
@@ -162,8 +162,8 @@ VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
 //------------------------------------------------------------------------------
 
-VoxelVolume<uint8_t> import_homberg(string path) {
-  ifstream myfile(path);
+inline VoxelVolume<uint8_t> import_homberg(string path) {
+  ifstream myFile(path);
 
   //  Vector3f minX(1000,1000,1000), maxX(-1000,-1000,-1000);
   //  Vector3f minX(0,0,0);
@@ -174,7 +174,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
   VoxelVolume<uint8_t> greyVolume;
   //  size_t cubeLength = 750;
   size_t cubeLength = 512;
-  greyVolume.s = Vector3i(cubeLength, cubeLength, cubeLength);
+  greyVolume.s = Vector3l(cubeLength, cubeLength, cubeLength);
   greyVolume.set_spacing_and_voxelValues_from_s();
   greyVolume.voxelValues.clear();
   greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 0);
@@ -193,9 +193,9 @@ VoxelVolume<uint8_t> import_homberg(string path) {
   while (true) {
     string dummy;
     float x0, x1, x2, r;
-    myfile >> dummy >> x0 >> x1 >> x2 >> r;
+    myFile >> dummy >> x0 >> x1 >> x2 >> r;
 
-    if (myfile.eof())
+    if (myFile.eof())
       break;
 
     cout << someCounter++ << endl;
@@ -213,7 +213,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
 
     Vector3f vxCenter =
         (x - minX).array() * float(cubeLength) / (maxX - minX).array();
-    Vector3i vxMin, vxMax;
+    Vector3l vxMin, vxMax;
     float rVx = r * float(cubeLength) / (maxX(0) - minX(0));
 
     bool sphereInside = true;
@@ -236,19 +236,19 @@ VoxelVolume<uint8_t> import_homberg(string path) {
       }
     }
 
-    vector<vector<Vector3i>> checkVxs(numThreads);
+    vector<vector<Vector3l>> checkVxs(numThreads);
     for (int k = vxMin(2); k < vxMax(2); ++k)
       for (int j = vxMin(1); j < vxMax(1); ++j)
         for (int i = vxMin(0); i < vxMax(0); ++i)
-          checkVxs[greyVolume.vx_to_vxID(Vector3i(i, j, k)) % numThreads]
-              .push_back(Vector3i(i, j, k));
+          checkVxs[greyVolume.vx_to_vxID(Vector3l(i, j, k)) % numThreads]
+              .push_back(Vector3l(i, j, k));
 
     float rVxSquared = rVx * rVx;
 
 #pragma omp parallel for
     for (size_t threadID = 0; threadID < checkVxs.size(); ++threadID)
       for (size_t n = 0; n < checkVxs[threadID].size(); ++n) {
-        Vector3i checkVx = checkVxs[threadID][n];
+        Vector3l checkVx = checkVxs[threadID][n];
         size_t checkVxID = greyVolume.vx_to_vxID(checkVx);
 
         if (greyVolume[checkVxID] == 255)
@@ -256,7 +256,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
 
         bool processedBefore = false;
         VoxelVolume<uint8_t> subVoxelVolume;
-        subVoxelVolume.s = Vector3i(8, 8, 8);
+        subVoxelVolume.s = Vector3l(8, 8, 8);
         subVoxelVolume.set_spacing_and_voxelValues_from_s();
         subVoxelVolume.voxelValues.clear();
         subVoxelVolume.voxelValues.resize(8 * 8 * 8, 0);
@@ -280,7 +280,7 @@ VoxelVolume<uint8_t> import_homberg(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume[checkVxID] = 255;
+            greyVolume.voxelValues[checkVxID] = 255;
           continue;
         }
 
@@ -302,13 +302,14 @@ VoxelVolume<uint8_t> import_homberg(string path) {
 
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
-                subVoxelVolume[subVoxelVolume.vx_to_vxID(Vector3i(I, J, K))] =
+                subVoxelVolume
+                    .voxelValues[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
                     1;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume[checkVxID] = 255;
+          greyVolume.voxelValues[checkVxID] = 255;
           continue;
         }
 
@@ -332,21 +333,21 @@ VoxelVolume<uint8_t> import_homberg(string path) {
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value > greyVolume[it->first])
-        greyVolume[it->first] = value;
+        greyVolume.voxelValues[it->first] = value;
     }
 
   return greyVolume;
 }
 
-VoxelVolume<uint8_t> import_homberg_negative(string path) {
-  ifstream myfile(path);
+inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
+  ifstream myFile(path);
 
   Vector3f minX(-0.5, -0.5, -0.5);
   Vector3f maxX(511.5, 511.5, 511.5);
 
   VoxelVolume<uint8_t> greyVolume;
   size_t cubeLength = 512;
-  greyVolume.s = Vector3i(cubeLength, cubeLength, cubeLength);
+  greyVolume.s = Vector3l(cubeLength, cubeLength, cubeLength);
   greyVolume.set_spacing_and_voxelValues_from_s();
   greyVolume.voxelValues.clear();
   greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 255);
@@ -363,9 +364,9 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
   while (true) {
     string dummy;
     float x0, x1, x2, r;
-    myfile >> dummy >> x0 >> x1 >> x2 >> r;
+    myFile >> dummy >> x0 >> x1 >> x2 >> r;
 
-    if (myfile.eof())
+    if (myFile.eof())
       break;
 
     cout << ".\n";
@@ -374,7 +375,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
     Vector3f vxCenter =
         (x - minX).array() * float(cubeLength) / (maxX - minX).array();
-    Vector3i vxMin, vxMax;
+    Vector3l vxMin, vxMax;
     float rVx = r * float(cubeLength) / (maxX(0) - minX(0));
 
     for (size_t dim = 0; dim < 3; ++dim) {
@@ -388,19 +389,19 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
       }
     }
 
-    vector<vector<Vector3i>> checkVxs(numThreads);
+    vector<vector<Vector3l>> checkVxs(numThreads);
     for (int k = vxMin(2); k < vxMax(2); ++k)
       for (int j = vxMin(1); j < vxMax(1); ++j)
         for (int i = vxMin(0); i < vxMax(0); ++i)
-          checkVxs[greyVolume.vx_to_vxID(Vector3i(i, j, k)) % numThreads]
-              .push_back(Vector3i(i, j, k));
+          checkVxs[greyVolume.vx_to_vxID(Vector3l(i, j, k)) % numThreads]
+              .push_back(Vector3l(i, j, k));
 
     float rVxSquared = rVx * rVx;
 
 #pragma omp parallel for
     for (size_t threadID = 0; threadID < checkVxs.size(); ++threadID)
       for (size_t n = 0; n < checkVxs[threadID].size(); ++n) {
-        Vector3i checkVx = checkVxs[threadID][n];
+        Vector3l checkVx = checkVxs[threadID][n];
         size_t checkVxID = greyVolume.vx_to_vxID(checkVx);
 
         if (greyVolume[checkVxID] == 0)
@@ -408,7 +409,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         bool processedBefore = false;
         VoxelVolume<uint8_t> subVoxelVolume;
-        subVoxelVolume.s = Vector3i(8, 8, 8);
+        subVoxelVolume.s = Vector3l(8, 8, 8);
         subVoxelVolume.set_spacing_and_voxelValues_from_s();
         subVoxelVolume.voxelValues.clear();
         subVoxelVolume.voxelValues.resize(8 * 8 * 8, 1);
@@ -432,7 +433,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume[checkVxID] = 0;
+            greyVolume.voxelValues[checkVxID] = 0;
           continue;
         }
 
@@ -454,13 +455,14 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
-                subVoxelVolume[subVoxelVolume.vx_to_vxID(Vector3i(I, J, K))] =
+                subVoxelVolume
+                    .voxelValues[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
                     0;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume[checkVxID] = 0;
+          greyVolume.voxelValues[checkVxID] = 0;
           continue;
         }
 
@@ -484,7 +486,7 @@ VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value < greyVolume[it->first])
-        greyVolume[it->first] = value;
+        greyVolume.voxelValues[it->first] = value;
     }
 
   return greyVolume;
