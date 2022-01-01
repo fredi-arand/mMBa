@@ -1,8 +1,8 @@
 #include "DistanceField.h"
+#include "PoreMorphology.h"
 #include "VoxelVolume.h"
 #include "examplespaper.h"
 #include "importhomberg.h"
-#include "poremorphology.h"
 #include "thesis_helpers.h"
 #include <Eigen/Dense>
 #include <chrono>

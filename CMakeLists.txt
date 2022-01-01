@@ -10,6 +10,7 @@ add_executable(mMBa
   src/main.cpp
   src/VoxelVolume.cpp
   src/DistanceField.cpp
+  src/PoreMorphology.cpp
 )
 target_include_directories(mMBa PRIVATE src)
 target_compile_features(mMBa PRIVATE cxx_std_17)

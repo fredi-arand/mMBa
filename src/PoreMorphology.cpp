@@ -1,7 +1,4 @@
-#pragma once
-
-#include "DistanceField.h"
-#include "VoxelVolume.h"
+#include "PoreMorphology.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -11,93 +8,18 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
-#include <list>
-#include <map>
-#include <queue>
 #include <random>
 #include <set>
 #include <tuple>
 #include <utility>
-#ifdef ENABLE_GNU_PARALLEL
-#include <parallel/algorithm>
-#endif
-
-#define PI 3.14159265358979323846
+//------------------------------------------------------------------------------
 namespace fred {
+//------------------------------------------------------------------------------
 using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
-
-typedef Matrix<uint8_t, 3, 1> Vector3ui8;
-
-struct PoreMorphology {
-
-  uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
-      throatValue{uint32_t(2) << 30}, backgroundValue{uint32_t(3) << 30};
-  uint32_t parentCounter{0};
-  float smallPadding{0.5};
-  float epsilon{0.2f};
-
-  bool parallelFlag{true};
-
-  // Silin, Patzek (2006): Pore space morphology analysis using maximal
-  // inscribed spheres
-
-  PoreMorphology(DistanceField const &distanceField)
-      : poreMorphologyCreated(false), throatsReduced(false),
-        distanceFieldP(&distanceField) {}
-
-  void create_pore_morphology() {
-    //      auto rMax = *max_element(distanceFieldP->voxelValues.begin(),
-    //      distanceFieldP->voxelValues.end());
-    //      create_pore_morphology(max(rMax/20.0,1.0), 0.0);
-    create_pore_morphology(1.0, 0.0);
-  }
-  //    void
-  //    create_pore_morphology_single(){create_pore_morphology_single(1.0,0.0);}
-
-  void create_pore_morphology(float rMinMaster, float rMinBall);
-  //    void create_pore_morphology_single(float rMinMaster, float rMinBall);
-
-  void update_neighbors_flood(size_t const &voxelIndex_i);
-  void update_neighbors_box(const size_t &voxelIndex_i);
-  bool quick_neighbor_check(size_t i);
-
-  void export_ppm_stacks(string foldername);
-
-  void reduce_throat_volume();
-
-  void export_statistics(string foldername);
-
-  void merge_pores(float throatRatio);
-
-  //    void export_effective_radius_statistics();
-
-  template <typename T>
-  void export_histogram(vector<T> const &values, string filename) const;
-
-  template <typename T>
-  void export_histogram(vector<T> const &values, string filename,
-                        double minValue, double maxValue,
-                        size_t nrOfBins) const;
-
-  void create_legacy_volumes(VoxelVolume<uint32_t> &morphologyVolume,
-                             VoxelVolume<uint8_t> &stateVolume);
-
-  //    void alter_morphology_highest_connected_pore();
-
-  uint32_t get_flag(uint32_t const &morphologyValue) const;
-  uint32_t get_parent(uint32_t const &morphologyValue) const;
-
-  VoxelVolume<uint32_t> morphologyVolume;
-
-  map<uint32_t, size_t> parentToVoxelIndex;
-
-  bool poreMorphologyCreated, throatsReduced;
-  DistanceField const *distanceFieldP;
-};
 //------------------------------------------------------------------------------
-inline bool PoreMorphology::quick_neighbor_check(size_t i) {
+bool PoreMorphology::quick_neighbor_check(size_t i) {
 
   bool ignoreBall = false;
 
@@ -142,22 +64,20 @@ inline bool PoreMorphology::quick_neighbor_check(size_t i) {
   return ignoreBall;
 }
 //------------------------------------------------------------------------------
-inline uint32_t
-PoreMorphology::get_parent(uint32_t const &morphologyValue) const {
+uint32_t PoreMorphology::get_parent(uint32_t const &morphologyValue) const {
   static uint32_t morphologyReader =
       (~uint32_t(0)) - (uint32_t(1) << 31) - (uint32_t(1) << 30);
   return morphologyReader & morphologyValue;
 }
 //------------------------------------------------------------------------------
-inline uint32_t
-PoreMorphology::get_flag(uint32_t const &morphologyValue) const {
+uint32_t PoreMorphology::get_flag(uint32_t const &morphologyValue) const {
   static uint32_t flagReader = (uint32_t(1) << 31) + (uint32_t(1) << 30);
   return flagReader & morphologyValue;
 }
 //------------------------------------------------------------------------------
-inline void
-PoreMorphology::create_legacy_volumes(VoxelVolume<uint32_t> &_morphologyVolume,
-                                      VoxelVolume<uint8_t> &stateVolume) {
+void PoreMorphology::create_legacy_volumes(
+    VoxelVolume<uint32_t> &_morphologyVolume,
+    VoxelVolume<uint8_t> &stateVolume) {
   auto const &s = morphologyVolume.s;
   auto const &spacing = morphologyVolume.spacing;
   _morphologyVolume.s = s;
@@ -178,7 +98,7 @@ PoreMorphology::create_legacy_volumes(VoxelVolume<uint32_t> &_morphologyVolume,
   }
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::merge_pores(float throatRatio) {
+void PoreMorphology::merge_pores(float throatRatio) {
 
   cout << "\nMerging Pores with maximum throat ratio > " << throatRatio
        << " with larger Pores...\n";
@@ -421,7 +341,7 @@ inline void PoreMorphology::merge_pores(float throatRatio) {
        << " s" << endl;
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::export_ppm_stacks(string foldername) {
+void PoreMorphology::export_ppm_stacks(const char *foldername) {
   //  srand(time(NULL));
   srand(0);
 
@@ -430,6 +350,8 @@ inline void PoreMorphology::export_ppm_stacks(string foldername) {
   //  created!\n"; return;}
 
   cout << "\nExporting as ppm stacks to " << foldername << " ...\n";
+
+  using Vector3ui8 = Vector3<uint8_t>;
 
   VoxelVolume<Vector3ui8> colorVolume;
   colorVolume.s = morphologyVolume.s;
@@ -514,7 +436,7 @@ inline void PoreMorphology::export_ppm_stacks(string foldername) {
 
     char numberBuffer[64];
     sprintf(numberBuffer, "%06i", k);
-    ofstream myFile(foldername + "stack" + numberBuffer + ".ppm");
+    ofstream myFile(string(foldername) + "stack" + numberBuffer + ".ppm");
     myFile << "P6\n"
            << colorVolume.s(0) << " " << colorVolume.s(1) << endl
            << 255 << endl;
@@ -522,7 +444,7 @@ inline void PoreMorphology::export_ppm_stacks(string foldername) {
   }
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::reduce_throat_volume() {
+void PoreMorphology::reduce_throat_volume() {
 
   if (!poreMorphologyCreated) {
     cout << "\nCreate Pore Morphology first!\n";
@@ -736,8 +658,7 @@ inline void PoreMorphology::reduce_throat_volume() {
        << " s" << endl;
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::create_pore_morphology(float rMinMaster,
-                                                   float rMinBall) {
+void PoreMorphology::create_pore_morphology(float rMinMaster, float rMinBall) {
 
   if (!distanceFieldP->distanceFieldCreated) {
     cout << "\nWARNING: Can't create Pore Morphology, no Distance Field "
@@ -910,7 +831,7 @@ inline void PoreMorphology::create_pore_morphology(float rMinMaster,
        << " s" << endl;
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
+void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
   auto const &s = morphologyVolume.s;
   auto const &distanceField = *distanceFieldP;
 
@@ -1008,7 +929,7 @@ inline void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
   }
 }
 //------------------------------------------------------------------------------
-inline void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
+void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
 
   auto const &s = morphologyVolume.s;
   auto const &distanceField = *distanceFieldP;

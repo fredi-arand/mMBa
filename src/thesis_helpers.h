@@ -1,7 +1,7 @@
 #pragma once
 
 #include "DistanceField.h"
-#include "poremorphology.h"
+#include "PoreMorphology.h"
 #include <fstream>
 #include <iostream>
 #include <set>
