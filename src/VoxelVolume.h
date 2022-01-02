@@ -26,20 +26,8 @@ template <typename T> struct VoxelVolume {
     voxelValues.resize(s.cast<size_t>().prod());
   }
 
-  // switch x and y
-  void switch_xy();
-
   // import volume from raw file
   void import_raw_volume(Vector3l const &s, const char *filename);
-
-  // binarize volume
-  T binarize_volume(VoxelVolume<bool> &isFict, VoxelVolume<bool> &isPhys) const;
-  void binarize_volume(VoxelVolume<bool> &isFict, VoxelVolume<bool> &isPhys,
-                       T isoValue) const;
-
-  // create from multiplication of two other volumes
-  void create_from_two_volumes(VoxelVolume<T> const &volA,
-                               VoxelVolume<T> const &volB);
 
   // export volume as pgm stacks
   void export_pgm_stacks(const char *foldername) const;

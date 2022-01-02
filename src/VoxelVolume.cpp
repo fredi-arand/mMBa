@@ -11,21 +11,6 @@ namespace fred {
 //------------------------------------------------------------------------------
 using namespace std;
 //------------------------------------------------------------------------------
-template <typename T> void VoxelVolume<T>::switch_xy() {
-  VoxelVolume<T> switchedVolume(*this);
-  switchedVolume.voxelValues.clear();
-  switchedVolume.voxelValues.resize(s.cast<size_t>().prod());
-
-  Vector3l xi;
-  size_t i = 0;
-  for (xi(2) = 0; xi(2) < s(2); ++xi(2))
-    for (xi(0) = 0; xi(0) < s(0); ++xi(0))
-      for (xi(1) = 0; xi(1) < s(1); ++xi(1), ++i)
-        switchedVolume.voxelValues[i] = voxelValues[xi.dot(spacing)];
-
-  voxelValues = switchedVolume.voxelValues;
-}
-//------------------------------------------------------------------------------
 template <typename T>
 size_t VoxelVolume<T>::vx_to_vxID(Vector3l const &vx) const {
   if ((vx.array() >= 0).all() && (vx.array() < s.array()).all())
@@ -42,97 +27,6 @@ size_t VoxelVolume<T>::vx_to_vxID(Vector3l const &vx) const {
   }
 
   return spacing.dot(vxNew);
-}
-//------------------------------------------------------------------------------
-template <typename T>
-T VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
-                                  VoxelVolume<bool> &isPhys) const {
-  auto minMaxValue = minmax_element(voxelValues.begin(), voxelValues.end());
-  T isoValue = (*(minMaxValue.first) + *(minMaxValue.second)) / 2;
-  binarize_volume(isFict, isPhys, isoValue);
-  return isoValue;
-}
-//------------------------------------------------------------------------------
-template <typename T>
-void VoxelVolume<T>::binarize_volume(VoxelVolume<bool> &isFict,
-                                     VoxelVolume<bool> &isPhys,
-                                     T isoValue) const {
-  if (!hasValues) {
-    cout << "\nWARNING: Cannot binarize volume, empty Voxel Volume!\n";
-  }
-
-  cout << "\nCreating Binary Volumes ...\n";
-
-  isFict.s = s.array() - 1;
-  isFict.spacing = Vector3l(1, isFict.s(0), isFict.s(0) * isFict.s(1));
-  isFict.voxelValues.resize(isFict.s.cast<size_t>().prod());
-
-  isPhys.s = isFict.s;
-  isPhys.spacing = isFict.spacing;
-  isPhys.voxelValues.resize(isFict.voxelValues.size());
-
-  // make two runs to use parallel architecture
-  for (size_t runID = 0; runID < 2; ++runID) {
-
-    // can't use parallel processing on bool vector for some cases
-    if (spacing(2) < 8)
-      omp_set_num_threads(1);
-
-#pragma omp parallel
-    {
-
-#pragma omp for
-      for (long k = runID; k < s(2) - 1; k += 2) {
-        size_t vxID = static_cast<size_t>(isFict.spacing(2)) * k;
-
-        for (int j = 0; j < s(1) - 1; ++j) {
-          vector<size_t> checkCube(8, 0);
-          for (int n = 0; n < 8; ++n)
-            checkCube[n] =
-                spacing.dot(Vector3l(n % 2, j + (n / 2) % 2, k + n / 4));
-
-          for (int i = 0; i < s(0) - 1; ++i) {
-            size_t currSum = 0;
-            for (int n = 0; n < 8; ++n)
-              currSum += this->voxelValues[checkCube[n]] >= isoValue;
-
-            if (currSum != 0)
-              isPhys.voxelValues[vxID] = true;
-
-            if (currSum != 8)
-              isFict.voxelValues[vxID] = true;
-
-            for (int n = 0; n < 8; ++n)
-              ++checkCube[n];
-
-            ++vxID;
-          }
-        }
-      }
-    }
-
-    if (spacing(2) < 8)
-      omp_set_num_threads(0);
-  }
-}
-//------------------------------------------------------------------------------
-template <typename T>
-void VoxelVolume<T>::create_from_two_volumes(const VoxelVolume<T> &volA,
-                                             const VoxelVolume<T> &volB) {
-  if ((volA.s.array() != volB.s.array()).any() || !volA.hasValues ||
-      volB.hasValues) {
-    cout << "\nWARNING: can't combine Volumes\n";
-    return;
-  }
-
-  cout << "\nCombining Volumes ...\n";
-  s = volA.s;
-  spacing = volA.spacing;
-  voxelValues.resize(s.cast<size_t>().prod(), 0);
-  transform(volA.voxelValues.begin(), volA.voxelValues.end(),
-            volB.voxelValues.begin(), voxelValues.begin(), multiplies<T>());
-
-  hasValues = true;
 }
 //------------------------------------------------------------------------------
 template <typename T>

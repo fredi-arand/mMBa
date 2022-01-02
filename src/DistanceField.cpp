@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iostream>
-#include <limits>
-#include <map>
+#include <vector>
 //------------------------------------------------------------------------------
 namespace fred {
 //------------------------------------------------------------------------------
