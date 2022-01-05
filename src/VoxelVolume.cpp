@@ -47,9 +47,7 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
   cout << "\nImporting Raw Volume from \"" << filename << "\" ...\n";
 
   this->s = s;
-  spacing = Vector3l(1, s(0), s(0) * s(1));
-
-  voxelValues.resize(s.cast<int32_t>().prod());
+  set_spacing_and_voxelValues_from_s();
 
   if constexpr (!is_same_v<T, bool>)
     myFile.read((char *)&voxelValues[0], sizeof(T) * voxelValues.size());
@@ -58,8 +56,6 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
     cout << "\nWARNING: Couldnt't import volume, error while reading in file\n";
     return;
   }
-
-  hasValues = true;
 }
 //------------------------------------------------------------------------------
 template <>
@@ -67,7 +63,7 @@ void VoxelVolume<MorphologyValue>::export_pgm_stacks(const char *) const;
 //------------------------------------------------------------------------------
 template <typename T>
 void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
-  if (!hasValues) {
+  if (voxelValues.empty()) {
     cout << "\nWARNING: Can't export pgm stacks, empty Voxel Volume!\n";
     return;
   }

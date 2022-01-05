@@ -31,7 +31,7 @@ template <typename T>
 void DistanceField::create_distance_field(
     VoxelVolume<T> const &voxelVolume, std::optional<float> const &optValue) {
 
-  if (!voxelVolume.hasValues) {
+  if (voxelVolume.voxelValues.empty()) {
     cout << "\nWARNING: Can't create distance field, empty Voxel Volume!\n";
     return;
   }
@@ -45,8 +45,6 @@ void DistanceField::create_distance_field(
     isoValue = *optValue;
 
   high_resolution_clock::time_point tStart = high_resolution_clock::now();
-
-  hasValues = true;
 
   cout << "\nCreating Distance Field (isoValue: " << float(isoValue)
        << ") ...\n";

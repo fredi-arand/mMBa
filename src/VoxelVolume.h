@@ -9,8 +9,7 @@ using Vector3l = Eigen::Vector3<long>;
 //------------------------------------------------------------------------------
 template <typename T> struct VoxelVolume {
 
-  VoxelVolume()
-      : s(Vector3l(0, 0, 0)), spacing(Vector3l(1, 1, 1)), hasValues(false) {}
+  VoxelVolume() : s(0, 0, 0), spacing(0, 0, 0) {}
 
   // standard functions to translate between ID and Coord
   Vector3l vxID_to_vx(size_t vxID) const {
@@ -50,7 +49,6 @@ template <typename T> struct VoxelVolume {
   // 0/1/2-direction
   std::vector<T> voxelValues;
   Vector3l s, spacing;
-  bool hasValues;
 };
 //------------------------------------------------------------------------------
 struct MorphologyValue {
