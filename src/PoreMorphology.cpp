@@ -372,7 +372,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
   for (size_t n = 0; n < morphologyVolume.voxelValues.size(); ++n)
     if (morphologyVolume[n].state != MorphologyValue::BACKGROUND) {
       if (morphologyVolume[n].state == MorphologyValue::THROAT) {
-        colorVolume[n] = Vector3ui8(127, 127, 127);
+        colorVolume.voxelValues[n] = Vector3ui8(127, 127, 127);
       } else {
         size_t colorID = morphologyVolume[n].parentId;
 
@@ -404,7 +404,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
         if (colorShuffle.size() == 1)
           someColor << 0, 0, 255;
 
-        colorVolume[n] = someColor;
+        colorVolume.voxelValues[n] = someColor;
       }
     }
 
