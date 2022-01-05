@@ -53,4 +53,12 @@ template <typename T> struct VoxelVolume {
   bool hasValues;
 };
 //------------------------------------------------------------------------------
+struct MorphologyValue {
+  enum State : uint32_t { INIT, ENCLOSED, THROAT, BACKGROUND };
+  uint32_t state : 2;
+  uint32_t parentId : 30;
+};
+//------------------------------------------------------------------------------
+static_assert(sizeof(MorphologyValue) == 4);
+//------------------------------------------------------------------------------
 } // namespace fred

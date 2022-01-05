@@ -62,6 +62,9 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
   hasValues = true;
 }
 //------------------------------------------------------------------------------
+template <>
+void VoxelVolume<MorphologyValue>::export_pgm_stacks(const char *) const;
+//------------------------------------------------------------------------------
 template <typename T>
 void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
   if (!hasValues) {
@@ -112,6 +115,10 @@ void VoxelVolume<T>::export_raw(const char *filename) const {
     myFile.write((char *)&voxelValues[0], sizeof(T) * s.cast<size_t>().prod());
 }
 //------------------------------------------------------------------------------
+template <>
+void VoxelVolume<MorphologyValue>::export_stack_for_gp(
+    long stackID, const char *filename) const;
+//------------------------------------------------------------------------------
 template <typename T>
 void VoxelVolume<T>::export_stack_for_gp(long stackID,
                                          const char *filename) const {
@@ -129,6 +136,7 @@ template struct VoxelVolume<bool>;
 template struct VoxelVolume<float>;
 template struct VoxelVolume<int>;
 template struct VoxelVolume<uint32_t>;
+template struct VoxelVolume<MorphologyValue>;
 //------------------------------------------------------------------------------
 } // namespace fred
 //------------------------------------------------------------------------------

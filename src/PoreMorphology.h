@@ -14,8 +14,6 @@ namespace fred {
 
 struct PoreMorphology {
 
-  uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
-      throatValue{uint32_t(2) << 30}, backgroundValue{uint32_t(3) << 30};
   uint32_t parentCounter{0};
   float smallPadding{0.5};
   float epsilon{0.2f};
@@ -69,10 +67,7 @@ struct PoreMorphology {
 
   //    void alter_morphology_highest_connected_pore();
 
-  uint32_t get_flag(uint32_t const &morphologyValue) const;
-  uint32_t get_parent(uint32_t const &morphologyValue) const;
-
-  VoxelVolume<uint32_t> morphologyVolume;
+  VoxelVolume<MorphologyValue> morphologyVolume;
 
   std::map<uint32_t, size_t> parentToVoxelIndex;
 

@@ -59,20 +59,6 @@ void gnuplot_volume_to_images(string const &folderName,
   }
 }
 //------------------------------------------------------------------------------
-inline uint32_t get_parent(uint32_t const &morphologyValue) {
-  static uint32_t morphologyReader = (~0) - (1 << 31) - (1 << 30);
-  return morphologyReader & morphologyValue;
-}
-//------------------------------------------------------------------------------
-inline uint32_t get_flag(uint32_t const &morphologyValue) {
-  static uint32_t flagReader = (1 << 31) + (1 << 30);
-  return flagReader & morphologyValue;
-}
-//------------------------------------------------------------------------------
-static constexpr uint32_t initValue{0}, enclosedValue{uint32_t(1) << 30},
-    throatValue{uint32_t(1) << 31},
-    backgroundValue{(uint32_t(1) << 31) + (uint32_t(1) << 30)};
-
 static unsigned fileCounter = 0;
 //------------------------------------------------------------------------------
 inline void gnuplot_palette_file(string fileName,
@@ -90,17 +76,17 @@ inline void gnuplot_palette_file(string fileName,
   ofstream image_palette_file(fileName);
   for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
        ++voxelIndex) {
-    uint32_t morphologyValue = morphologyVolume[voxelIndex];
-    uint32_t flag = get_flag(morphologyValue);
-    uint32_t parent = get_parent(morphologyValue);
+    MorphologyValue morphologyValue = morphologyVolume[voxelIndex];
+    uint32_t flag = morphologyValue.state;
+    uint32_t parent = morphologyValue.parentId;
     Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
-    if (flag == backgroundValue) {
+    if (flag == MorphologyValue::BACKGROUND) {
       image_palette_file << position.transpose() << " -1.0\n";
       continue;
     }
 
-    if (flag == throatValue) {
+    if (flag == MorphologyValue::THROAT) {
       image_palette_file << position.transpose() << " -2.0 \n";
       continue;
     }
@@ -119,7 +105,7 @@ inline void gnuplot_palette_file(string fileName,
 //------------------------------------------------------------------------------
 inline void
 update_neighbors_box(DistanceField const &distanceField,
-                     VoxelVolume<uint32_t> &morphologyVolume,
+                     VoxelVolume<MorphologyValue> &morphologyVolume,
                      size_t const &voxelIndex_i,
                      map<uint32_t, size_t> const &parentToVoxelIndex) {
 
@@ -129,8 +115,8 @@ update_neighbors_box(DistanceField const &distanceField,
 
   Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
 
-  uint32_t const &morphologyValue_i = morphologyVolume[voxelIndex_i];
-  uint32_t parent_i = get_parent(morphologyValue_i);
+  MorphologyValue const &morphologyValue_i = morphologyVolume[voxelIndex_i];
+  uint32_t parent_i = morphologyValue_i.parentId;
 
   float const &r_i = distanceField[voxelIndex_i] + padding;
   long const roundedR_i = floor(r_i);
@@ -156,12 +142,12 @@ update_neighbors_box(DistanceField const &distanceField,
         size_t const voxelIndex_j =
             morphologyVolume.vx_to_vxID(voxelCoordinate_j);
 
-        uint32_t &morphologyValue_j =
+        MorphologyValue &morphologyValue_j =
             morphologyVolume.voxelValues[voxelIndex_j];
-        uint32_t flag_j = get_flag(morphologyValue_j);
-        uint32_t parent_j = get_parent(morphologyValue_j);
+        uint32_t flag_j = morphologyValue_j.state;
+        uint32_t parent_j = morphologyValue_j.parentId;
 
-        if (flag_j != initValue)
+        if (flag_j != MorphologyValue::INIT)
           continue;
 
         float const &r_j = distanceField[voxelIndex_j] + padding;
@@ -173,7 +159,7 @@ update_neighbors_box(DistanceField const &distanceField,
 
         // change to slave if possible
         if (parent_j == 0) {
-          morphologyValue_j = parent_i;
+          morphologyValue_j.parentId = parent_i;
           parent_j = parent_i;
         }
 
@@ -181,8 +167,8 @@ update_neighbors_box(DistanceField const &distanceField,
 
           // try to enclose
           if (r_ij + r_j <= r_i + .2 * r_j) {
-            morphologyValue_j += enclosedValue;
-            flag_j = enclosedValue;
+            morphologyValue_j.state = MorphologyValue::ENCLOSED;
+            flag_j = MorphologyValue::ENCLOSED;
           }
 
           continue;
@@ -190,8 +176,8 @@ update_neighbors_box(DistanceField const &distanceField,
 
         // some value other than the current master has been written
         // --> mark as throat
-        morphologyValue_j += throatValue;
-        flag_j = enclosedValue;
+        morphologyValue_j.state = MorphologyValue::THROAT;
+        flag_j = MorphologyValue::ENCLOSED;
       }
 
   // paint
@@ -228,12 +214,12 @@ update_neighbors_box(DistanceField const &distanceField,
 
   for (size_t n = 0; n < processingOrder.size(); ++n) {
     size_t voxelIndex = processingOrder[n];
-    uint32_t morphologyValue = morphologyVolume[voxelIndex];
-    uint32_t flag = get_flag(morphologyValue);
-    uint32_t parent = get_parent(morphologyValue);
+    MorphologyValue morphologyValue = morphologyVolume[voxelIndex];
+    uint32_t flag = morphologyValue.state;
+    uint32_t parent = morphologyValue.parentId;
     Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
-    if (flag == initValue) {
+    if (flag == MorphologyValue::INIT) {
       if (parentToVoxelIndex.count(parent) == 0)
         allBalls << position.transpose() << " " << distanceField[voxelIndex]
                  << " " << -2.0 << endl;
@@ -246,7 +232,7 @@ update_neighbors_box(DistanceField const &distanceField,
       continue;
     }
 
-    if (flag == throatValue) {
+    if (flag == MorphologyValue::THROAT) {
       allBalls << position.transpose() << " " << distanceField[voxelIndex]
                << " " << 2.0 << endl;
       continue;
@@ -269,17 +255,17 @@ update_neighbors_box(DistanceField const &distanceField,
 
   for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
        ++voxelIndex) {
-    uint32_t morphologyValue = morphologyVolume[voxelIndex];
-    uint32_t flag = get_flag(morphologyValue);
-    uint32_t parent = get_parent(morphologyValue);
+    MorphologyValue morphologyValue = morphologyVolume[voxelIndex];
+    uint32_t flag = morphologyValue.state;
+    uint32_t parent = morphologyValue.parentId;
     Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
-    if (flag == backgroundValue) {
+    if (flag == MorphologyValue::BACKGROUND) {
       image_file << position.transpose() << " 255 255 255 0\n";
       continue;
     }
 
-    if (flag == throatValue) {
+    if (flag == MorphologyValue::THROAT) {
       image_file << position.transpose() << " 127 127 127 255\n";
       continue;
     }
@@ -302,17 +288,17 @@ update_neighbors_box(DistanceField const &distanceField,
                               "img_palette.txt");
   for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
        ++voxelIndex) {
-    uint32_t morphologyValue = morphologyVolume[voxelIndex];
-    uint32_t flag = get_flag(morphologyValue);
-    uint32_t parent = get_parent(morphologyValue);
+    MorphologyValue morphologyValue = morphologyVolume[voxelIndex];
+    uint32_t flag = morphologyValue.state;
+    uint32_t parent = morphologyValue.parentId;
     Vector3l position = morphologyVolume.vxID_to_vx(voxelIndex);
 
-    if (flag == backgroundValue) {
+    if (flag == MorphologyValue::BACKGROUND) {
       image_palette_file << position.transpose() << " -1.0\n";
       continue;
     }
 
-    if (flag == throatValue) {
+    if (flag == MorphologyValue::THROAT) {
       image_palette_file << position.transpose() << " -2.0 \n";
       continue;
     }
@@ -341,21 +327,21 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   cout << "\nCreating Pore Morphology:\n";
 
-  VoxelVolume<uint32_t> morphologyVolume;
+  VoxelVolume<MorphologyValue> morphologyVolume;
 
   morphologyVolume.s = distanceField.s;
   morphologyVolume.spacing = distanceField.spacing;
 
   morphologyVolume.voxelValues.clear();
   morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
-                                      backgroundValue);
+                                      {MorphologyValue::BACKGROUND, 0});
 
   // each voxel in the void space is its own master
   size_t voidVoxels = 0;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
       ++voidVoxels;
-      morphologyVolume.voxelValues[n] = initValue;
+      morphologyVolume.voxelValues[n] = {MorphologyValue::INIT, 0};
     }
 
   if (voidVoxels == 0) {
@@ -388,7 +374,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
     processingOrder.clear();
     for (size_t index = 0; index < s.cast<size_t>().prod(); ++index)
       if (distanceField[index] > r_infimum && distanceField[index] <= r_max &&
-          get_flag(morphologyVolume[index]) == initValue)
+          morphologyVolume[index].state == MorphologyValue::INIT)
         processingOrder.push_back(index);
 
     //    processingOrder.shrink_to_fit();
@@ -435,29 +421,30 @@ inline void mb_step_by_step(DistanceField const &distanceField,
       //    if(roundedR_i<omp_get_num_threads())
       //      omp_set_num_threads(1);
 
-      uint32_t &morphologyValue_i = morphologyVolume.voxelValues[voxelIndex_i];
-      uint32_t flag_i = get_flag(morphologyValue_i);
-      uint32_t parent_i = get_parent(morphologyValue_i);
+      MorphologyValue &morphologyValue_i =
+          morphologyVolume.voxelValues[voxelIndex_i];
+      uint32_t flag_i = morphologyValue_i.state;
+      uint32_t parent_i = morphologyValue_i.parentId;
 
       // cases: throat, enclosed
-      if (flag_i != initValue)
+      if (flag_i != MorphologyValue::INIT)
         continue;
 
       // case: not allowed to be parent
-      if (r_i < rMinMaster && flag_i == initValue && parent_i == 0)
+      if (r_i < rMinMaster && flag_i == MorphologyValue::INIT && parent_i == 0)
         continue;
 
       // case: parent.
       if (parent_i == 0) {
         ++parentCounter;
         parentToVoxelIndex[parentCounter] = voxelIndex_i;
-        morphologyValue_i = parentCounter;
-        parent_i = get_parent(morphologyValue_i);
+        morphologyValue_i.parentId = parentCounter;
+        parent_i = morphologyValue_i.parentId;
       }
 
       // ball always encloses itself. Morphology is fixed at this point.
-      morphologyValue_i += enclosedValue;
-      flag_i = get_flag(morphologyValue_i);
+      morphologyValue_i.state = MorphologyValue::ENCLOSED;
+      flag_i = morphologyValue_i.state;
 
       // check and update neighborhood
       update_neighbors_box(distanceField, morphologyVolume, voxelIndex_i,
@@ -473,8 +460,8 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   // count changed voxels
   size_t ignoredVoxels = 0;
   for (auto &morphologyValue : morphologyVolume.voxelValues)
-    if (get_flag(morphologyValue) == initValue) {
-      morphologyValue = backgroundValue;
+    if (morphologyValue.state == MorphologyValue::INIT) {
+      morphologyValue.state = MorphologyValue::BACKGROUND;
       ++ignoredVoxels;
     }
 
