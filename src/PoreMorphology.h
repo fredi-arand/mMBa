@@ -47,8 +47,6 @@ struct PoreMorphology {
 
   void reduce_throat_volume();
 
-  void export_statistics(const char *foldername);
-
   void merge_pores(float throatRatio);
 
   //    void export_effective_radius_statistics();
