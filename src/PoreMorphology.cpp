@@ -144,12 +144,12 @@ void PoreMorphology::merge_pores(float throatRatio) {
     throats.insert(throat);
 
     if (maxThroatRadii.count(throat) == 0) {
-      maxThroatRadii[throat] = (*distanceFieldP)[voxelIndex];
+      maxThroatRadii[throat] = distanceField[voxelIndex];
       continue;
     }
 
-    if (maxThroatRadii[throat] < (*distanceFieldP)[voxelIndex])
-      maxThroatRadii[throat] = (*distanceFieldP)[voxelIndex];
+    if (maxThroatRadii[throat] < distanceField[voxelIndex])
+      maxThroatRadii[throat] = distanceField[voxelIndex];
   }
 
   // sort ascending
@@ -157,9 +157,9 @@ void PoreMorphology::merge_pores(float throatRatio) {
   map<size_t, set<set<uint32_t>>,
       function<bool(size_t const &, size_t const &)>>
   poreCentersToThroats([&](size_t const &i, size_t const &j) -> bool {
-    return (*distanceFieldP)[i] == (*distanceFieldP)[j]
+    return distanceField[i] == distanceField[j]
                ? i < j
-               : (*distanceFieldP)[i] < (*distanceFieldP)[j];
+               : distanceField[i] < distanceField[j];
   });
 
   for (auto const &throat : throats)
@@ -178,7 +178,7 @@ void PoreMorphology::merge_pores(float throatRatio) {
     set<set<uint32_t>> connectedThroats = poreCenterToThroats->second;
 
     // current radius
-    float rPore = (*distanceFieldP)[poreVoxelIndex];
+    float rPore = distanceField[poreVoxelIndex];
 
     // pore without throats --> continue
     if (connectedThroats.size() == 0)
@@ -213,9 +213,8 @@ void PoreMorphology::merge_pores(float throatRatio) {
         cout << endl << neighborParent << endl;
 
       if (neighborParent != parent &&
-          (*distanceFieldP)[parentToVoxelIndex.at(neighborParent)] >
-              parentRadius) {
-        parentRadius = (*distanceFieldP)[parentToVoxelIndex.at(neighborParent)];
+          distanceField[parentToVoxelIndex.at(neighborParent)] > parentRadius) {
+        parentRadius = distanceField[parentToVoxelIndex.at(neighborParent)];
         mergeToParent = neighborParent;
       }
     }
@@ -517,9 +516,9 @@ void PoreMorphology::reduce_throat_volume() {
 
     set<size_t, function<bool(size_t const &, size_t const &)>> throatVoxels(
         [&](size_t const &a, size_t const &b) -> bool {
-          return (*distanceFieldP)[a] == (*distanceFieldP)[b]
+          return distanceField[a] == distanceField[b]
                      ? (a > b)
-                     : (*distanceFieldP)[a] > (*distanceFieldP)[b];
+                     : distanceField[a] > distanceField[b];
         });
 
     //    cout << "\nset defined\n";
@@ -531,9 +530,9 @@ void PoreMorphology::reduce_throat_volume() {
 
     sort(throatVoxelVector.begin(), throatVoxelVector.end(),
          [&](size_t const &a, size_t const &b) {
-           return (*distanceFieldP)[a] == (*distanceFieldP)[b]
+           return distanceField[a] == distanceField[b]
                       ? (a > b)
-                      : (*distanceFieldP)[a] > (*distanceFieldP)[b];
+                      : distanceField[a] > distanceField[b];
          });
 
     //    cout << "\nsorted\n";
@@ -555,7 +554,7 @@ void PoreMorphology::reduce_throat_volume() {
         cout << "\n!\n";
       }
 
-      //    cout << endl << (*distanceFieldP)[vxID] << endl;
+      //    cout << endl << distanceField[vxID] << endl;
 
       // check for neighbors
       uint32_t neighbourValue = 0;
@@ -655,15 +654,14 @@ void PoreMorphology::reduce_throat_volume() {
 //------------------------------------------------------------------------------
 void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
-  DistanceField const &distanceField = *distanceFieldP;
   Vector3l const &s = distanceField.s;
 
   high_resolution_clock::time_point tStart = high_resolution_clock::now();
 
   cout << "\nCreating Pore Morphology:\n";
 
-  morphologyVolume.s = distanceFieldP->s;
-  morphologyVolume.spacing = distanceFieldP->spacing;
+  morphologyVolume.s = distanceField.s;
+  morphologyVolume.spacing = distanceField.spacing;
 
   morphologyVolume.voxelValues.clear();
   morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
@@ -823,7 +821,6 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 //------------------------------------------------------------------------------
 void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
   auto const &s = morphologyVolume.s;
-  auto const &distanceField = *distanceFieldP;
 
   Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
 
@@ -923,7 +920,6 @@ void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
 void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
 
   auto const &s = morphologyVolume.s;
-  auto const &distanceField = *distanceFieldP;
 
   Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
 

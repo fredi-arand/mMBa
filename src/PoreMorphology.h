@@ -25,7 +25,7 @@ struct PoreMorphology {
 
   PoreMorphology(DistanceField const &distanceField)
       : poreMorphologyCreated(false), throatsReduced(false),
-        distanceFieldP(&distanceField) {}
+        distanceField(distanceField) {}
 
   void create_pore_morphology() {
     //      auto rMax = *max_element(distanceFieldP->voxelValues.begin(),
@@ -70,7 +70,7 @@ struct PoreMorphology {
   std::map<uint32_t, size_t> parentToVoxelIndex;
 
   bool poreMorphologyCreated, throatsReduced;
-  DistanceField const *distanceFieldP;
+  DistanceField const &distanceField;
 };
 //------------------------------------------------------------------------------
 } // namespace fred
