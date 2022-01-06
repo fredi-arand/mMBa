@@ -36,8 +36,8 @@ struct PoreMorphology {
   //    void
   //    create_pore_morphology_single(){create_pore_morphology_single(1.0,0.0);}
 
-  void create_pore_morphology(float rMinMaster, float rMinBall);
-  //    void create_pore_morphology_single(float rMinMaster, float rMinBall);
+  void create_pore_morphology(float rMinParent, float rMinBall);
+  //    void create_pore_morphology_single(float rMinParent, float rMinBall);
 
   void update_neighbors_flood(size_t const &voxelIndex_i);
   void update_neighbors_box(const size_t &voxelIndex_i);

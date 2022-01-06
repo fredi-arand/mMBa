@@ -353,12 +353,12 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
                                  Vector3ui8(0, 0, 0));
 
   vector<size_t> colorShuffle;
-  map<size_t, size_t> masterPoreToColor;
+  map<size_t, size_t> parentPoreToColor;
 
   size_t dummyCounter = 0;
   for (auto const &parentAndVoxelIndex : parentToVoxelIndex) {
     uint32_t parent = parentAndVoxelIndex.first;
-    masterPoreToColor[parent] = dummyCounter;
+    parentPoreToColor[parent] = dummyCounter;
     colorShuffle.push_back(dummyCounter);
     ++dummyCounter;
   }
@@ -376,25 +376,25 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
       } else {
         size_t colorID = morphologyVolume[n].parentId;
 
-        colorID = colorShuffle[masterPoreToColor[colorID]];
+        colorID = colorShuffle[parentPoreToColor[colorID]];
 
         size_t r = (min(colorID, colorShuffle.size() - colorID) * 512) /
                    colorShuffle.size();
         while (r > 255)
           --r;
 
-        size_t dummyMasterID =
+        size_t dummyParentID =
             (colorID + colorShuffle.size() / 3) % colorShuffle.size();
         size_t g =
-            (min(dummyMasterID, colorShuffle.size() - dummyMasterID) * 512) /
+            (min(dummyParentID, colorShuffle.size() - dummyParentID) * 512) /
             colorShuffle.size();
         while (g > 255)
           --g;
 
-        dummyMasterID =
+        dummyParentID =
             (colorID + (colorShuffle.size() * 2) / 3) % colorShuffle.size();
         size_t b =
-            (min(dummyMasterID, colorShuffle.size() - dummyMasterID) * 512) /
+            (min(dummyParentID, colorShuffle.size() - dummyParentID) * 512) /
             colorShuffle.size();
         while (b > 255)
           --b;
@@ -653,7 +653,7 @@ void PoreMorphology::reduce_throat_volume() {
        << " s" << endl;
 }
 //------------------------------------------------------------------------------
-void PoreMorphology::create_pore_morphology(float rMinMaster, float rMinBall) {
+void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
   if (!distanceFieldP->distanceFieldCreated) {
     cout << "\nWARNING: Can't create Pore Morphology, no Distance Field "
@@ -675,7 +675,7 @@ void PoreMorphology::create_pore_morphology(float rMinMaster, float rMinBall) {
   morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
                                       {MorphologyValue::BACKGROUND, 0});
 
-  // each voxel in the void space is its own master
+  // each voxel in the void space is its own parent
   size_t voidVoxels = 0;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
@@ -782,7 +782,7 @@ void PoreMorphology::create_pore_morphology(float rMinMaster, float rMinBall) {
       }
 
       // case: not allowed to be parent
-      if (r_i < rMinMaster && flag_i == MorphologyValue::INIT && parent_i == 0)
+      if (r_i < rMinParent && flag_i == MorphologyValue::INIT && parent_i == 0)
         continue;
 
       // case: parent.
@@ -917,7 +917,7 @@ void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
         continue;
       }
 
-      // some value other than the current master has been written
+      // some value other than the current parent has been written
       // --> mark as throat
       morphologyValue_j.state = MorphologyValue::THROAT;
       flag_j = MorphologyValue::THROAT;
@@ -977,7 +977,7 @@ void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
 
         float r_ij = sqrt(r_ij_squared);
 
-        // change to slave if possible
+        // update parent if applicable
         if (parent_j == 0) {
           morphologyValue_j.parentId = parent_i;
           parent_j = parent_i;
@@ -994,7 +994,7 @@ void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
           continue;
         }
 
-        // some value other than the current master has been written
+        // some value other than the current parent has been written
         // --> mark as throat
         morphologyValue_j.state = MorphologyValue::THROAT;
         flag_j = MorphologyValue::ENCLOSED;

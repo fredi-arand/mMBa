@@ -157,7 +157,7 @@ update_neighbors_box(DistanceField const &distanceField,
 
         float r_ij = sqrt(r_ij_squared);
 
-        // change to slave if possible
+        // update parent if applicable
         if (parent_j == 0) {
           morphologyValue_j.parentId = parent_i;
           parent_j = parent_i;
@@ -174,7 +174,7 @@ update_neighbors_box(DistanceField const &distanceField,
           continue;
         }
 
-        // some value other than the current master has been written
+        // some value other than the current parent has been written
         // --> mark as throat
         morphologyValue_j.state = MorphologyValue::THROAT;
         flag_j = MorphologyValue::ENCLOSED;
@@ -318,7 +318,7 @@ update_neighbors_box(DistanceField const &distanceField,
 }
 //------------------------------------------------------------------------------
 inline void mb_step_by_step(DistanceField const &distanceField,
-                            float rMinMaster, float rMinBall) {
+                            float rMinParent, float rMinBall) {
 
   uint32_t parentCounter{0};
   map<uint32_t, size_t> parentToVoxelIndex;
@@ -336,7 +336,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
                                       {MorphologyValue::BACKGROUND, 0});
 
-  // each voxel in the void space is its own master
+  // each voxel in the void space is its own parent
   size_t voidVoxels = 0;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
@@ -431,7 +431,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
         continue;
 
       // case: not allowed to be parent
-      if (r_i < rMinMaster && flag_i == MorphologyValue::INIT && parent_i == 0)
+      if (r_i < rMinParent && flag_i == MorphologyValue::INIT && parent_i == 0)
         continue;
 
       // case: parent.
