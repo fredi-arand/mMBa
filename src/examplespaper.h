@@ -97,7 +97,7 @@ using namespace Eigen;
 //   DistanceField distanceField;
 //   VoxelVolume<int> exampleVolume = two_circles();
 //   exampleVolume.export_stack_for_gp(0,"output/greyValues");
-//   distanceField.create_distance_field<int>(exampleVolume,127.5);
+//   distanceField.create<int>(exampleVolume,127.5);
 //   distanceField.export_stack_for_gp(0,"output/distanceField");
 
 //  ofstream centralCicles("output/myCircles");
@@ -116,7 +116,7 @@ using namespace Eigen;
 //   DistanceField distanceField;
 //   VoxelVolume<int> exampleVolume = two_circles_one_box();
 //   exampleVolume.export_stack_for_gp(0,"output/greyValues");
-//   distanceField.create_distance_field<int>(exampleVolume,127.5);
+//   distanceField.create<int>(exampleVolume,127.5);
 //   distanceField.export_pgm_stacks("output/distance_field/");
 //   distanceField.export_stack_for_gp(0,"output/distanceField");
 

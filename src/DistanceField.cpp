@@ -11,29 +11,28 @@ using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
 //------------------------------------------------------------------------------
-template void DistanceField::create_distance_field<float>(
-    Vector3l const &s, const char *filename,
-    std::optional<float> const &isoValue);
-template void DistanceField::create_distance_field<uint8_t>(
-    Vector3l const &s, const char *filename,
-    std::optional<float> const &isoValue);
+template DistanceField
+DistanceField::create<float>(Vector3l const &s, const char *filename,
+                             std::optional<float> const &isoValue);
+template DistanceField
+DistanceField::create<uint8_t>(Vector3l const &s, const char *filename,
+                               std::optional<float> const &isoValue);
 //------------------------------------------------------------------------------
 template <typename T>
-void DistanceField::create_distance_field(
-    Vector3l const &s, const char *filename,
-    std::optional<float> const &isoValue) {
+DistanceField DistanceField::create(Vector3l const &s, const char *filename,
+                                    std::optional<float> const &isoValue) {
   VoxelVolume<T> voxelVolume;
   voxelVolume.import_raw_volume(s, filename);
-  create_distance_field(voxelVolume, isoValue);
+  return create(voxelVolume, isoValue);
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void DistanceField::create_distance_field(
-    VoxelVolume<T> const &voxelVolume, std::optional<float> const &optValue) {
+DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
+                                    std::optional<float> const &optValue) {
 
   if (voxelVolume.voxelValues.empty()) {
     cout << "\nWARNING: Can't create distance field, empty Voxel Volume!\n";
-    return;
+    return DistanceField();
   }
 
   float isoValue;
@@ -49,19 +48,18 @@ void DistanceField::create_distance_field(
   cout << "\nCreating Distance Field (isoValue: " << float(isoValue)
        << ") ...\n";
 
-  s = voxelVolume.s;
-  spacing = voxelVolume.spacing;
+  Vector3l const &s = voxelVolume.s;
 
   float posInf = s.squaredNorm(), negInf = -posInf;
-  voxelValues.resize(s.cast<int32_t>().prod(), posInf);
+  DistanceField distanceField;
+  distanceField.resize(s, posInf);
 
   // run thrice
   for (size_t dimStart = 0; dimStart < 3; ++dimStart) {
-    VoxelVolume<float> testDistanceField = *this;
-    testDistanceField.voxelValues.clear();
-    testDistanceField.voxelValues.resize(s.cast<size_t>().prod(), posInf);
+    VoxelVolume<float> testDistanceField;
+    testDistanceField.resize(s, posInf);
 #pragma omp parallel for
-    for (size_t n = 0; n < voxelValues.size(); ++n)
+    for (size_t n = 0; n < distanceField.voxelValues.size(); ++n)
       if (voxelVolume.voxelValues[n] >= isoValue)
         testDistanceField.voxelValues[n] = 0;
 
@@ -79,7 +77,7 @@ void DistanceField::create_distance_field(
           vector<size_t> vxIDs;
           vxIDs.reserve(s(dim % 3));
           for (vx(dim % 3) = 0; vx(dim % 3) < s(dim % 3); ++vx(dim % 3))
-            vxIDs.push_back(vx_to_vxID(vx));
+            vxIDs.push_back(distanceField.vx_to_vxID(vx));
 
           // float coordinates of points on grid line, and value at minimum
           vector<float> xMins;
@@ -189,16 +187,14 @@ void DistanceField::create_distance_field(
         // update minDistanceField
 #pragma omp parallel for // NOLINT
     for (size_t n = 0; n < testDistanceField.voxelValues.size(); ++n)
-      if (testDistanceField.voxelValues[n] < voxelValues[n])
-        voxelValues[n] = testDistanceField.voxelValues[n];
+      if (testDistanceField.voxelValues[n] < distanceField.voxelValues[n])
+        distanceField.voxelValues[n] = testDistanceField.voxelValues[n];
 
   } // end of distance field iteration (exact in dimension dimStart)
 
 #pragma omp parallel for
-  for (size_t n = 0; n < voxelValues.size(); ++n)
-    voxelValues[n] = sqrt(voxelValues[n]);
-
-  distanceFieldCreated = true;
+  for (size_t n = 0; n < distanceField.voxelValues.size(); ++n)
+    distanceField.voxelValues[n] = sqrt(distanceField.voxelValues[n]);
 
   cout << endl;
 
@@ -206,6 +202,8 @@ void DistanceField::create_distance_field(
   cout << "Duration: "
        << double(duration_cast<milliseconds>(tEnd - tStart).count()) / 1000.0
        << " s" << endl;
+
+  return distanceField;
 }
 //------------------------------------------------------------------------------
 void DistanceField::calculate_porosity() const {

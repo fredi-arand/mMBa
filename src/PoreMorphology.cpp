@@ -655,12 +655,6 @@ void PoreMorphology::reduce_throat_volume() {
 //------------------------------------------------------------------------------
 void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
-  if (!distanceFieldP->distanceFieldCreated) {
-    cout << "\nWARNING: Can't create Pore Morphology, no Distance Field "
-            "created!\n";
-    return;
-  }
-
   DistanceField const &distanceField = *distanceFieldP;
   Vector3l const &s = distanceField.s;
 
