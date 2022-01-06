@@ -11,6 +11,8 @@ template <typename T> struct VoxelVolume {
 
   VoxelVolume() : s(0, 0, 0), spacing(0, 0, 0) {}
 
+  void resize(Vector3l const &s, T const &value = T());
+
   // standard functions to translate between ID and Coord
   Vector3l vxID_to_vx(size_t vxID) const {
     return Vector3l(vxID % s(0), (vxID / s(0)) % s(1), vxID / (s(0) * s(1)));
@@ -18,12 +20,6 @@ template <typename T> struct VoxelVolume {
 
   // use this to always get vxID even for illegal values of vx
   size_t vx_to_vxID(Vector3l const &vx) const;
-
-  void set_spacing_and_voxelValues_from_s() {
-    // quickly set spacing and voxelValues for given s
-    spacing << 1, s(0), s(0) * s(1);
-    voxelValues.resize(s.cast<size_t>().prod());
-  }
 
   // import volume from raw file
   void import_raw_volume(Vector3l const &s, const char *filename);

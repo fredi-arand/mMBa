@@ -5,11 +5,21 @@
 #include <iostream>
 #include <numeric>
 #include <omp.h>
+#include <stdexcept>
 #include <string>
 //------------------------------------------------------------------------------
 namespace fred {
 //------------------------------------------------------------------------------
 using namespace std;
+//------------------------------------------------------------------------------
+template <typename T>
+void VoxelVolume<T>::resize(Vector3l const &s, T const &value) {
+  if ((s.array() <= 0).any())
+    throw runtime_error("s must be positive");
+  this->s = s;
+  spacing << 1, s(0), s(0) * s(1);
+  voxelValues.resize(s.cast<size_t>().prod(), value);
+}
 //------------------------------------------------------------------------------
 template <typename T>
 size_t VoxelVolume<T>::vx_to_vxID(Vector3l const &vx) const {
@@ -39,15 +49,9 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
     return;
   }
 
-  if ((s.array() < 1).any()) {
-    cout << "\nWARNING: Can't import volume, bad dimensions!\n";
-    return;
-  }
+  resize(s);
 
   cout << "\nImporting Raw Volume from \"" << filename << "\" ...\n";
-
-  this->s = s;
-  set_spacing_and_voxelValues_from_s();
 
   if constexpr (!is_same_v<T, bool>)
     myFile.read((char *)&voxelValues[0], sizeof(T) * voxelValues.size());

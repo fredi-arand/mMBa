@@ -130,10 +130,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
   // write to file voxelVolume
   VoxelVolume<uint8_t> voxelVolume;
-  voxelVolume.s = resolution;
-  voxelVolume.set_spacing_and_voxelValues_from_s();
-  voxelVolume.voxelValues.clear();
-  voxelVolume.voxelValues.resize(voxelVolume.s.cast<size_t>().prod(), 0);
+  voxelVolume.resize(resolution);
 
   size_t possibleCounts = subcellPoints * subcellPoints * subcellPoints;
 #pragma omp parallel for
@@ -173,10 +170,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
   VoxelVolume<uint8_t> greyVolume;
   //  size_t cubeLength = 750;
   size_t cubeLength = 512;
-  greyVolume.s = Vector3l(cubeLength, cubeLength, cubeLength);
-  greyVolume.set_spacing_and_voxelValues_from_s();
-  greyVolume.voxelValues.clear();
-  greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 0);
+  greyVolume.resize({cubeLength, cubeLength, cubeLength});
 
   cout << endl << cubeLength << endl;
 
@@ -255,10 +249,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
         bool processedBefore = false;
         VoxelVolume<uint8_t> subVoxelVolume;
-        subVoxelVolume.s = Vector3l(8, 8, 8);
-        subVoxelVolume.set_spacing_and_voxelValues_from_s();
-        subVoxelVolume.voxelValues.clear();
-        subVoxelVolume.voxelValues.resize(8 * 8 * 8, 0);
+        subVoxelVolume.resize({8, 8, 8});
 
         // quickly check all corner voxels to save time
         Vector3f cornerCheck(checkVx(0) + 0.5 / 8, checkVx(1) + 0.5 / 8,
@@ -346,10 +337,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
   VoxelVolume<uint8_t> greyVolume;
   size_t cubeLength = 512;
-  greyVolume.s = Vector3l(cubeLength, cubeLength, cubeLength);
-  greyVolume.set_spacing_and_voxelValues_from_s();
-  greyVolume.voxelValues.clear();
-  greyVolume.voxelValues.resize(greyVolume.s.cast<size_t>().prod(), 255);
+  greyVolume.resize({cubeLength, cubeLength, cubeLength}, 255);
 
   cout << endl << cubeLength << endl;
 
@@ -408,10 +396,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         bool processedBefore = false;
         VoxelVolume<uint8_t> subVoxelVolume;
-        subVoxelVolume.s = Vector3l(8, 8, 8);
-        subVoxelVolume.set_spacing_and_voxelValues_from_s();
-        subVoxelVolume.voxelValues.clear();
-        subVoxelVolume.voxelValues.resize(8 * 8 * 8, 1);
+        subVoxelVolume.resize({8, 8, 8}, 1);
 
         // quickly check all corner voxels to save time
         Vector3f cornerCheck(checkVx(0) + 0.5 / 8, checkVx(1) + 0.5 / 8,
