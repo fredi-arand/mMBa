@@ -59,9 +59,9 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
     VoxelVolume<float> testDistanceField;
     testDistanceField.resize(s, posInf);
 #pragma omp parallel for
-    for (size_t n = 0; n < distanceField.data.size(); ++n)
-      if (voxelVolume.data[n] >= isoValue)
-        testDistanceField.data[n] = 0;
+    for (size_t n = 0; n < distanceField.size(); ++n)
+      if (voxelVolume[n] >= isoValue)
+        testDistanceField[n] = 0;
 
     cout << "\rIteration " << dimStart + 1 << " of 3" << flush;
 
@@ -90,17 +90,16 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
           for (int i = 0; i < s(dim % 3) - 1; ++i) {
             xMins.push_back(i);
             onJunction.push_back(true);
-            fMins.push_back(testDistanceField.data[vxIDs[i]]);
+            fMins.push_back(testDistanceField[vxIDs[i]]);
 
             if (dim == dimStart &&
-                (voxelVolume.data[vxIDs[i]] >= isoValue) !=
-                    (voxelVolume.data[vxIDs[i + 1]] >= isoValue) &&
-                voxelVolume.data[vxIDs[i]] != isoValue &&
-                voxelVolume.data[vxIDs[i + 1]] != isoValue) {
+                (voxelVolume[vxIDs[i]] >= isoValue) !=
+                    (voxelVolume[vxIDs[i + 1]] >= isoValue) &&
+                voxelVolume[vxIDs[i]] != isoValue &&
+                voxelVolume[vxIDs[i + 1]] != isoValue) {
               float isoIntersection =
-                  float(voxelVolume.data[vxIDs[i]] - isoValue) /
-                  float(voxelVolume.data[vxIDs[i]] -
-                        voxelVolume.data[vxIDs[i + 1]]);
+                  float(voxelVolume[vxIDs[i]] - isoValue) /
+                  float(voxelVolume[vxIDs[i]] - voxelVolume[vxIDs[i + 1]]);
               if (isoIntersection > 0 && isoIntersection < 1) {
                 xMins.push_back((float)i + isoIntersection);
                 onJunction.push_back(false);
@@ -110,7 +109,7 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
           }
           xMins.push_back(s(dim % 3) - 1);
           onJunction.push_back(true);
-          fMins.push_back(testDistanceField.data[vxIDs[s(dim % 3) - 1]]);
+          fMins.push_back(testDistanceField[vxIDs[s(dim % 3) - 1]]);
 
           // find and save lower envelope
           long int currParabola = 0;
@@ -170,7 +169,7 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
               ++currParabola;
 
             if (onJunction[testParabola]) {
-              testDistanceField.data[vxIDs[vxID]] =
+              testDistanceField[vxIDs[vxID]] =
                   (xMins[testParabola] -
                    xMins[envelopeParabolas[currParabola]]) *
                       (xMins[testParabola] -
@@ -186,15 +185,15 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
 
         // update minDistanceField
 #pragma omp parallel for // NOLINT
-    for (size_t n = 0; n < testDistanceField.data.size(); ++n)
-      if (testDistanceField.data[n] < distanceField.data[n])
-        distanceField.data[n] = testDistanceField.data[n];
+    for (size_t n = 0; n < testDistanceField.size(); ++n)
+      if (testDistanceField[n] < distanceField[n])
+        distanceField[n] = testDistanceField[n];
 
   } // end of distance field iteration (exact in dimension dimStart)
 
 #pragma omp parallel for
-  for (size_t n = 0; n < distanceField.data.size(); ++n)
-    distanceField.data[n] = sqrt(distanceField.data[n]);
+  for (size_t n = 0; n < distanceField.size(); ++n)
+    distanceField[n] = sqrt(distanceField[n]);
 
   cout << endl;
 

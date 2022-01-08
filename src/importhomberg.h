@@ -143,7 +143,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
                         size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
                         size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
 
-    voxelVolume.data[vxID] = (counts * 255) / possibleCounts;
+    voxelVolume[vxID] = (counts * 255) / possibleCounts;
 
     //    if(vxID%1024 == 0)
     //      cout << "\r" << float(vxID+1)*100.0/voxelVolume.data.size()
@@ -266,7 +266,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume.data[checkVxID] = 255;
+            greyVolume[checkVxID] = 255;
           continue;
         }
 
@@ -288,13 +288,13 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
-                subVoxelVolume
-                    .data[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] = 1;
+                subVoxelVolume[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
+                    1;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume.data[checkVxID] = 255;
+          greyVolume[checkVxID] = 255;
           continue;
         }
 
@@ -318,7 +318,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value > greyVolume[it->first])
-        greyVolume.data[it->first] = value;
+        greyVolume[it->first] = value;
     }
 
   return greyVolume;
@@ -412,7 +412,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume.data[checkVxID] = 0;
+            greyVolume[checkVxID] = 0;
           continue;
         }
 
@@ -434,13 +434,13 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
-                subVoxelVolume
-                    .data[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] = 0;
+                subVoxelVolume[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
+                    0;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume.data[checkVxID] = 0;
+          greyVolume[checkVxID] = 0;
           continue;
         }
 
@@ -464,7 +464,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value < greyVolume[it->first])
-        greyVolume.data[it->first] = value;
+        greyVolume[it->first] = value;
     }
 
   return greyVolume;

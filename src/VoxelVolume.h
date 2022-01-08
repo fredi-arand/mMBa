@@ -9,6 +9,9 @@ using Vector3l = Eigen::Vector3<long>;
 //------------------------------------------------------------------------------
 template <typename T> struct VoxelVolume {
 
+  using reference = typename std::vector<T>::reference;
+  using const_reference = typename std::vector<T>::const_reference;
+
   VoxelVolume() : s(0, 0, 0), spacing(0, 0, 0) {}
 
   void resize(Vector3l const &s, T const &value = T());
@@ -31,11 +34,15 @@ template <typename T> struct VoxelVolume {
   // export for gnuplot
   void export_stack_for_gp(long stackID, const char *filename) const;
 
-  T operator[](size_t vxID) const { return data[vxID]; }
+  const_reference operator[](size_t vxID) const { return data[vxID]; }
+  reference operator[](size_t vxID) { return data[vxID]; }
 
-  T operator()(Vector3l x) const { return this->operator[](vx_to_vxID(x)); }
-  T operator()(long x0, long x1, long x2) const {
-    return this->operator()(Vector3l(x0, x1, x2));
+  const_reference operator[](Vector3l const &x) const {
+    return data[vx_to_vxID(x)];
+  }
+
+  const_reference operator()(long x0, long x1, long x2) const {
+    return data[vx_to_vxID({x0, x1, x2})];
   }
 
   size_t size() { return data.size(); }

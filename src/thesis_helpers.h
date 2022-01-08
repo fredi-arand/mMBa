@@ -142,8 +142,7 @@ update_neighbors_box(DistanceField const &distanceField,
         size_t const voxelIndex_j =
             morphologyVolume.vx_to_vxID(voxelCoordinate_j);
 
-        MorphologyValue &morphologyValue_j =
-            morphologyVolume.data[voxelIndex_j];
+        MorphologyValue &morphologyValue_j = morphologyVolume[voxelIndex_j];
         uint32_t flag_j = morphologyValue_j.state;
         uint32_t parent_j = morphologyValue_j.parentId;
 
@@ -341,7 +340,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
       ++voidVoxels;
-      morphologyVolume.data[n] = {MorphologyValue::INIT, 0};
+      morphologyVolume[n] = {MorphologyValue::INIT, 0};
     }
 
   if (voidVoxels == 0) {
@@ -421,7 +420,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
       //    if(roundedR_i<omp_get_num_threads())
       //      omp_set_num_threads(1);
 
-      MorphologyValue &morphologyValue_i = morphologyVolume.data[voxelIndex_i];
+      MorphologyValue &morphologyValue_i = morphologyVolume[voxelIndex_i];
       uint32_t flag_i = morphologyValue_i.state;
       uint32_t parent_i = morphologyValue_i.parentId;
 
