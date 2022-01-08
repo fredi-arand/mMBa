@@ -26,17 +26,16 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
   // fine volume stores binary volumes for subcell points: in or out
   VoxelVolume<bool> fineVolume;
   fineVolume.s = resolution * subcellPoints;
-  //  fineVolume.set_spacing_and_voxelValues_from_s();
+  //  fineVolume.set_spacing_and_data_from_s();
   fineVolume.spacing =
       Vector3l(1, size_t(fineVolume.s(0)),
                size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)));
-  fineVolume.voxelValues.clear();
-  fineVolume.voxelValues.resize(size_t(fineVolume.s(0)) *
-                                    size_t(fineVolume.s(1)) *
-                                    size_t(fineVolume.s(2)),
-                                0);
+  fineVolume.data.clear();
+  fineVolume.data.resize(size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)) *
+                             size_t(fineVolume.s(2)),
+                         0);
 
-  cout << fineVolume.voxelValues.size() << endl;
+  cout << fineVolume.data.size() << endl;
 
   // import points from path
   vector<Vector3f> sphereCenters;
@@ -100,11 +99,9 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
           for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
-              fineVolume
-                  .voxelValues[size_t(I) * size_t(fineVolume.spacing(0)) +
-                               size_t(J) * size_t(fineVolume.spacing(1)) +
-                               size_t(K) * size_t(fineVolume.spacing(2))] =
-                  true;
+              fineVolume.data[size_t(I) * size_t(fineVolume.spacing(0)) +
+                              size_t(J) * size_t(fineVolume.spacing(1)) +
+                              size_t(K) * size_t(fineVolume.spacing(2))] = true;
     } else {
       for (long K = KMin; K <= KMax; ++K)
         for (long J = max(xFineMin(1), 0l);
@@ -112,11 +109,9 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
           for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
-              fineVolume
-                  .voxelValues[size_t(I) * size_t(fineVolume.spacing(0)) +
-                               size_t(J) * size_t(fineVolume.spacing(1)) +
-                               size_t(K) * size_t(fineVolume.spacing(2))] =
-                  true;
+              fineVolume.data[size_t(I) * size_t(fineVolume.spacing(0)) +
+                              size_t(J) * size_t(fineVolume.spacing(1)) +
+                              size_t(K) * size_t(fineVolume.spacing(2))] = true;
     }
 
     cout << "\r" << float(sphereID + 1) * 100.0 / sphereCenters.size()
@@ -134,7 +129,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
   size_t possibleCounts = subcellPoints * subcellPoints * subcellPoints;
 #pragma omp parallel for
-  for (size_t vxID = 0; vxID < voxelVolume.voxelValues.size(); ++vxID) {
+  for (size_t vxID = 0; vxID < voxelVolume.data.size(); ++vxID) {
     size_t counts = 0;
 
     Vector3l vx0Sub = subcellPoints * voxelVolume.vxID_to_vx(vxID);
@@ -142,15 +137,16 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
     for (size_t K = 0; K < subcellPoints; ++K)
       for (size_t J = 0; J < subcellPoints; ++J)
         for (size_t I = 0; I < subcellPoints; ++I)
-          counts += fineVolume.voxelValues
-                        [size_t(vx0Sub(0) + I) * size_t(fineVolume.spacing(0)) +
-                         size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
-                         size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
+          counts +=
+              fineVolume
+                  .data[size_t(vx0Sub(0) + I) * size_t(fineVolume.spacing(0)) +
+                        size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
+                        size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
 
-    voxelVolume.voxelValues[vxID] = (counts * 255) / possibleCounts;
+    voxelVolume.data[vxID] = (counts * 255) / possibleCounts;
 
     //    if(vxID%1024 == 0)
-    //      cout << "\r" << float(vxID+1)*100.0/voxelVolume.voxelValues.size()
+    //      cout << "\r" << float(vxID+1)*100.0/voxelVolume.data.size()
     //      << " %     " << flush;
   }
   cout << "\r100 %     " << endl;
@@ -270,7 +266,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume.voxelValues[checkVxID] = 255;
+            greyVolume.data[checkVxID] = 255;
           continue;
         }
 
@@ -293,13 +289,12 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
                 subVoxelVolume
-                    .voxelValues[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
-                    1;
+                    .data[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] = 1;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume.voxelValues[checkVxID] = 255;
+          greyVolume.data[checkVxID] = 255;
           continue;
         }
 
@@ -318,12 +313,12 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
-      for (size_t vxID = 0; vxID < it->second.voxelValues.size(); ++vxID)
+      for (size_t vxID = 0; vxID < it->second.data.size(); ++vxID)
         counter += (it->second)[vxID];
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value > greyVolume[it->first])
-        greyVolume.voxelValues[it->first] = value;
+        greyVolume.data[it->first] = value;
     }
 
   return greyVolume;
@@ -417,7 +412,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         if (allSame) {
           if (isInside)
-            greyVolume.voxelValues[checkVxID] = 0;
+            greyVolume.data[checkVxID] = 0;
           continue;
         }
 
@@ -440,13 +435,12 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
               if ((vxCenter - xCheck).squaredNorm() <= rVxSquared) {
                 ++hits;
                 subVoxelVolume
-                    .voxelValues[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] =
-                    0;
+                    .data[subVoxelVolume.vx_to_vxID(Vector3l(I, J, K))] = 0;
               }
             }
 
         if (hits == 8 * 8 * 8 && !processedBefore) {
-          greyVolume.voxelValues[checkVxID] = 0;
+          greyVolume.data[checkVxID] = 0;
           continue;
         }
 
@@ -465,12 +459,12 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
-      for (size_t vxID = 0; vxID < it->second.voxelValues.size(); ++vxID)
+      for (size_t vxID = 0; vxID < it->second.data.size(); ++vxID)
         counter += (it->second)[vxID];
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
       if (value < greyVolume[it->first])
-        greyVolume.voxelValues[it->first] = value;
+        greyVolume.data[it->first] = value;
     }
 
   return greyVolume;

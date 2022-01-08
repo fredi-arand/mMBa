@@ -28,8 +28,8 @@ struct PoreMorphology {
         distanceField(distanceField) {}
 
   void create_pore_morphology() {
-    //      auto rMax = *max_element(distanceFieldP->voxelValues.begin(),
-    //      distanceFieldP->voxelValues.end());
+    //      auto rMax = *max_element(distanceFieldP->data.begin(),
+    //      distanceFieldP->data.end());
     //      create_pore_morphology(max(rMax/20.0,1.0), 0.0);
     create_pore_morphology(1.0, 0.0);
   }

@@ -143,7 +143,7 @@ update_neighbors_box(DistanceField const &distanceField,
             morphologyVolume.vx_to_vxID(voxelCoordinate_j);
 
         MorphologyValue &morphologyValue_j =
-            morphologyVolume.voxelValues[voxelIndex_j];
+            morphologyVolume.data[voxelIndex_j];
         uint32_t flag_j = morphologyValue_j.state;
         uint32_t parent_j = morphologyValue_j.parentId;
 
@@ -332,16 +332,16 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   morphologyVolume.s = distanceField.s;
   morphologyVolume.spacing = distanceField.spacing;
 
-  morphologyVolume.voxelValues.clear();
-  morphologyVolume.voxelValues.resize(morphologyVolume.s.cast<size_t>().prod(),
-                                      {MorphologyValue::BACKGROUND, 0});
+  morphologyVolume.data.clear();
+  morphologyVolume.data.resize(morphologyVolume.s.cast<size_t>().prod(),
+                               {MorphologyValue::BACKGROUND, 0});
 
   // each voxel in the void space is its own parent
   size_t voidVoxels = 0;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
     if (distanceField[n] > rMinBall) {
       ++voidVoxels;
-      morphologyVolume.voxelValues[n] = {MorphologyValue::INIT, 0};
+      morphologyVolume.data[n] = {MorphologyValue::INIT, 0};
     }
 
   if (voidVoxels == 0) {
@@ -351,14 +351,14 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   vector<size_t> processingOrder;
   processingOrder.clear();
-  processingOrder.reserve(distanceField.voxelValues.size() / 16);
+  processingOrder.reserve(distanceField.data.size() / 16);
 
 #ifdef ENABLE_GNU_PARALLEL
-  float r_max = *(__gnu_parallel::max_element(distanceField.voxelValues.begin(),
-                                              distanceField.voxelValues.end()));
+  float r_max = *(__gnu_parallel::max_element(distanceField.data.begin(),
+                                              distanceField.data.end()));
 #else
-  float r_max = *(max_element(distanceField.voxelValues.begin(),
-                              distanceField.voxelValues.end()));
+  float r_max =
+      *(max_element(distanceField.data.begin(), distanceField.data.end()));
 #endif
 
   float r_infimum = r_max;
@@ -421,8 +421,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
       //    if(roundedR_i<omp_get_num_threads())
       //      omp_set_num_threads(1);
 
-      MorphologyValue &morphologyValue_i =
-          morphologyVolume.voxelValues[voxelIndex_i];
+      MorphologyValue &morphologyValue_i = morphologyVolume.data[voxelIndex_i];
       uint32_t flag_i = morphologyValue_i.state;
       uint32_t parent_i = morphologyValue_i.parentId;
 
@@ -459,7 +458,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   // count changed voxels
   size_t ignoredVoxels = 0;
-  for (auto &morphologyValue : morphologyVolume.voxelValues)
+  for (auto &morphologyValue : morphologyVolume.data)
     if (morphologyValue.state == MorphologyValue::INIT) {
       morphologyValue.state = MorphologyValue::BACKGROUND;
       ++ignoredVoxels;

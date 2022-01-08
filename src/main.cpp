@@ -260,7 +260,7 @@ void carbonFoamPaper7() {
          "750cubed_gauss_8bit.raw");
 
   float threshold = 127.5;
-  for (auto &value : voxelVolume.voxelValues)
+  for (auto &value : voxelVolume.data)
     value = 255 - value;
 
   DistanceField distanceField =
@@ -295,7 +295,7 @@ void carbonFoamPaper6() {
          "sample_without_small_pores_750_750_750_uint8.raw");
 
   float threshold = 119.5;
-  for (auto &value : voxelVolume.voxelValues)
+  for (auto &value : voxelVolume.data)
     value = 255 - value;
 
   DistanceField distanceField =

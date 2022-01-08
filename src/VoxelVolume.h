@@ -31,19 +31,16 @@ template <typename T> struct VoxelVolume {
   // export for gnuplot
   void export_stack_for_gp(long stackID, const char *filename) const;
 
-  T operator[](size_t vxID) const { return voxelValues[vxID]; }
+  T operator[](size_t vxID) const { return data[vxID]; }
 
   T operator()(Vector3l x) const { return this->operator[](vx_to_vxID(x)); }
   T operator()(long x0, long x1, long x2) const {
     return this->operator()(Vector3l(x0, x1, x2));
   }
 
-  size_t size() { return voxelValues.size(); }
+  size_t size() { return data.size(); }
 
-  // voxelValues: value of voxel (i,j,k) is stored at voxelValues(spacing(2)*k +
-  // spacing(1)*j + i) s:           size of voxel grid spacing:     spacing in
-  // 0/1/2-direction
-  std::vector<T> voxelValues;
+  std::vector<T> data;
   Vector3l s, spacing;
 };
 //------------------------------------------------------------------------------
