@@ -58,7 +58,7 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
     VoxelVolume<float> testDistanceField;
     testDistanceField.resize(s, posInf);
 #pragma omp parallel for
-    for (size_t n = 0; n < distanceField.size(); ++n)
+    for (size_t n = 0; n < distanceField().size(); ++n)
       if (voxelVolume[n] >= isoValue)
         testDistanceField[n] = 0;
 
@@ -184,14 +184,14 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
 
         // update minDistanceField
 #pragma omp parallel for // NOLINT
-    for (size_t n = 0; n < testDistanceField.size(); ++n)
+    for (size_t n = 0; n < testDistanceField().size(); ++n)
       if (testDistanceField[n] < distanceField[n])
         distanceField[n] = testDistanceField[n];
 
   } // end of distance field iteration (exact in dimension dimStart)
 
 #pragma omp parallel for
-  for (size_t n = 0; n < distanceField.size(); ++n)
+  for (size_t n = 0; n < distanceField().size(); ++n)
     distanceField[n] = sqrt(distanceField[n]);
 
   cout << endl;

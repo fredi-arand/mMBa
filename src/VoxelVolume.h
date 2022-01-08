@@ -51,8 +51,6 @@ template <typename T> struct VoxelVolume {
   std::vector<T> &operator()() { return data; }
   /// @}
 
-  size_t size() { return data.size(); }
-
   std::vector<T> data;
   Vector3l s, spacing;
 };
