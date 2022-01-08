@@ -30,15 +30,14 @@ template <typename T>
 DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
                                     std::optional<float> const &optValue) {
 
-  if (voxelVolume.data.empty()) {
+  if (voxelVolume().empty()) {
     cout << "\nWARNING: Can't create distance field, empty Voxel Volume!\n";
     return DistanceField();
   }
 
   float isoValue;
   if (!optValue) {
-    auto minMax =
-        minmax_element(voxelVolume.data.begin(), voxelVolume.data.end());
+    auto minMax = minmax_element(voxelVolume().begin(), voxelVolume().end());
     isoValue = (float(*(minMax.first)) + float(*(minMax.second))) / 2.0;
   } else
     isoValue = *optValue;

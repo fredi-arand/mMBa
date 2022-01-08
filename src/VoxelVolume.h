@@ -34,6 +34,8 @@ template <typename T> struct VoxelVolume {
   // export for gnuplot
   void export_stack_for_gp(long stackID, const char *filename) const;
 
+  /// Convenience functions to save typing
+  /// @{
   const_reference operator[](size_t vxID) const { return data[vxID]; }
   reference operator[](size_t vxID) { return data[vxID]; }
 
@@ -44,6 +46,10 @@ template <typename T> struct VoxelVolume {
   const_reference operator()(long x0, long x1, long x2) const {
     return data[vx_to_vxID({x0, x1, x2})];
   }
+
+  std::vector<T> const &operator()() const { return data; }
+  std::vector<T> &operator()() { return data; }
+  /// @}
 
   size_t size() { return data.size(); }
 

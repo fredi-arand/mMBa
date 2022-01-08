@@ -30,12 +30,12 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
   fineVolume.spacing =
       Vector3l(1, size_t(fineVolume.s(0)),
                size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)));
-  fineVolume.data.clear();
-  fineVolume.data.resize(size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)) *
-                             size_t(fineVolume.s(2)),
-                         0);
+  fineVolume().clear();
+  fineVolume().resize(size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)) *
+                          size_t(fineVolume.s(2)),
+                      0);
 
-  cout << fineVolume.data.size() << endl;
+  cout << fineVolume().size() << endl;
 
   // import points from path
   vector<Vector3f> sphereCenters;
@@ -99,9 +99,9 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
           for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
-              fineVolume.data[size_t(I) * size_t(fineVolume.spacing(0)) +
-                              size_t(J) * size_t(fineVolume.spacing(1)) +
-                              size_t(K) * size_t(fineVolume.spacing(2))] = true;
+              fineVolume()[size_t(I) * size_t(fineVolume.spacing(0)) +
+                           size_t(J) * size_t(fineVolume.spacing(1)) +
+                           size_t(K) * size_t(fineVolume.spacing(2))] = true;
     } else {
       for (long K = KMin; K <= KMax; ++K)
         for (long J = max(xFineMin(1), 0l);
@@ -109,9 +109,9 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
           for (long I = max(xFineMin(0), 0l);
                I <= min(xFineMax(0), fineVolume.s(0) - 1); ++I)
             if ((Vector3f(I, J, K) - mFine).squaredNorm() <= rFineSquared)
-              fineVolume.data[size_t(I) * size_t(fineVolume.spacing(0)) +
-                              size_t(J) * size_t(fineVolume.spacing(1)) +
-                              size_t(K) * size_t(fineVolume.spacing(2))] = true;
+              fineVolume()[size_t(I) * size_t(fineVolume.spacing(0)) +
+                           size_t(J) * size_t(fineVolume.spacing(1)) +
+                           size_t(K) * size_t(fineVolume.spacing(2))] = true;
     }
 
     cout << "\r" << float(sphereID + 1) * 100.0 / sphereCenters.size()
@@ -129,7 +129,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
   size_t possibleCounts = subcellPoints * subcellPoints * subcellPoints;
 #pragma omp parallel for
-  for (size_t vxID = 0; vxID < voxelVolume.data.size(); ++vxID) {
+  for (size_t vxID = 0; vxID < voxelVolume().size(); ++vxID) {
     size_t counts = 0;
 
     Vector3l vx0Sub = subcellPoints * voxelVolume.vxID_to_vx(vxID);
@@ -137,16 +137,15 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
     for (size_t K = 0; K < subcellPoints; ++K)
       for (size_t J = 0; J < subcellPoints; ++J)
         for (size_t I = 0; I < subcellPoints; ++I)
-          counts +=
-              fineVolume
-                  .data[size_t(vx0Sub(0) + I) * size_t(fineVolume.spacing(0)) +
-                        size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
-                        size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
+          counts += fineVolume()
+              [size_t(vx0Sub(0) + I) * size_t(fineVolume.spacing(0)) +
+               size_t(vx0Sub(1) + J) * size_t(fineVolume.spacing(1)) +
+               size_t(vx0Sub(2) + K) * size_t(fineVolume.spacing(2))];
 
     voxelVolume[vxID] = (counts * 255) / possibleCounts;
 
     //    if(vxID%1024 == 0)
-    //      cout << "\r" << float(vxID+1)*100.0/voxelVolume.data.size()
+    //      cout << "\r" << float(vxID+1)*100.0/voxelVolume().size()
     //      << " %     " << flush;
   }
   cout << "\r100 %     " << endl;
@@ -313,7 +312,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
-      for (size_t vxID = 0; vxID < it->second.data.size(); ++vxID)
+      for (size_t vxID = 0; vxID < it->second().size(); ++vxID)
         counter += (it->second)[vxID];
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);
@@ -459,7 +458,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
-      for (size_t vxID = 0; vxID < it->second.data.size(); ++vxID)
+      for (size_t vxID = 0; vxID < it->second().size(); ++vxID)
         counter += (it->second)[vxID];
 
       size_t value = (counter * 256) / (8 * 8 * 8 + 1);

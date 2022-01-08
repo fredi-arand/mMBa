@@ -331,9 +331,9 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   morphologyVolume.s = distanceField.s;
   morphologyVolume.spacing = distanceField.spacing;
 
-  morphologyVolume.data.clear();
-  morphologyVolume.data.resize(morphologyVolume.s.cast<size_t>().prod(),
-                               {MorphologyValue::BACKGROUND, 0});
+  morphologyVolume().clear();
+  morphologyVolume().resize(morphologyVolume.s.cast<size_t>().prod(),
+                            {MorphologyValue::BACKGROUND, 0});
 
   // each voxel in the void space is its own parent
   size_t voidVoxels = 0;
@@ -350,14 +350,13 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   vector<size_t> processingOrder;
   processingOrder.clear();
-  processingOrder.reserve(distanceField.data.size() / 16);
+  processingOrder.reserve(distanceField().size() / 16);
 
 #ifdef ENABLE_GNU_PARALLEL
-  float r_max = *(__gnu_parallel::max_element(distanceField.data.begin(),
-                                              distanceField.data.end()));
+  float r_max = *(__gnu_parallel::max_element(distanceField().begin(),
+                                              distanceField().end()));
 #else
-  float r_max =
-      *(max_element(distanceField.data.begin(), distanceField.data.end()));
+  float r_max = *(max_element(distanceField().begin(), distanceField().end()));
 #endif
 
   float r_infimum = r_max;
@@ -457,7 +456,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   // count changed voxels
   size_t ignoredVoxels = 0;
-  for (auto &morphologyValue : morphologyVolume.data)
+  for (auto &morphologyValue : morphologyVolume())
     if (morphologyValue.state == MorphologyValue::INIT) {
       morphologyValue.state = MorphologyValue::BACKGROUND;
       ++ignoredVoxels;

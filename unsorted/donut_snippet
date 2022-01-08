@@ -1,9 +1,9 @@
   VoxelVolume<uint8_t> donut;
   donut.s=Vector3l(32,32,16);
   donut.set_spacing_and_data_from_s();
-  donut.data.clear();
+  donut().clear();
   Vector3l s = donut.s;
-  donut.data.resize(donut.s.cast<size_t>().prod(),0);
+  donut().resize(donut.s.cast<size_t>().prod(),0);
   int superSampling = 16;
   float R = 10;
   float r = 3;
