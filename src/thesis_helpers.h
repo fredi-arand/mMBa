@@ -9,9 +9,9 @@
 namespace fred {
 //------------------------------------------------------------------------------
 inline void
-gnuplot_distance_field_and_maximal_balls(string const &folderName,
+gnuplot_distance_field_and_maximal_balls(std::string const &folderName,
                                          DistanceField const &distanceField) {
-
+  using namespace std;
   ofstream file_gp(folderName + "distance_field.txt");
   set<pair<float, pair<unsigned, unsigned>>> maximalBalls;
 
@@ -45,9 +45,9 @@ gnuplot_distance_field_and_maximal_balls(string const &folderName,
 }
 //------------------------------------------------------------------------------
 template <typename T>
-void gnuplot_volume_to_images(string const &folderName,
+void gnuplot_volume_to_images(std::string const &folderName,
                               VoxelVolume<T> const &voxelVolume) {
-
+  using namespace std;
   Vector3l const &s = voxelVolume.s;
 
   for (int k = 0; k < s(2); ++k) {
@@ -61,9 +61,9 @@ void gnuplot_volume_to_images(string const &folderName,
 //------------------------------------------------------------------------------
 static unsigned fileCounter = 0;
 //------------------------------------------------------------------------------
-inline void gnuplot_palette_file(string fileName,
+inline void gnuplot_palette_file(std::string fileName,
                                  PoreMorphology const &poreMorphology) {
-
+  using namespace std;
   auto const &morphologyVolume = poreMorphology.morphologyVolume;
   Vector3l const &s = morphologyVolume.s;
   auto const &parentToVoxelIndex = poreMorphology.parentToVoxelIndex;
@@ -107,8 +107,8 @@ inline void
 update_neighbors_box(DistanceField const &distanceField,
                      VoxelVolume<MorphologyValue> &morphologyVolume,
                      size_t const &voxelIndex_i,
-                     map<uint32_t, size_t> const &parentToVoxelIndex) {
-
+                     std::map<uint32_t, size_t> const &parentToVoxelIndex) {
+  using namespace std;
   auto const &s = morphologyVolume.s;
 
   double padding = 0.5;
@@ -318,7 +318,7 @@ update_neighbors_box(DistanceField const &distanceField,
 //------------------------------------------------------------------------------
 inline void mb_step_by_step(DistanceField const &distanceField,
                             float rMinParent, float rMinBall) {
-
+  using namespace std;
   uint32_t parentCounter{0};
   map<uint32_t, size_t> parentToVoxelIndex;
 
