@@ -16,6 +16,8 @@ template <typename T>
 void VoxelVolume<T>::resize(Vector3l const &s, T const &value) {
   if ((s.array() <= 0).any())
     throw runtime_error("s must be positive");
+  if (!data.empty())
+    throw runtime_error("resize must be called on empty VoxelVolume");
   this->s = s;
   spacing << 1, s(0), s(0) * s(1);
   data.resize(s.cast<size_t>().prod(), value);
@@ -64,6 +66,10 @@ void VoxelVolume<T>::import_raw_volume(Vector3l const &s,
 //------------------------------------------------------------------------------
 template <>
 void VoxelVolume<MorphologyValue>::export_pgm_stacks(const char *) const;
+//------------------------------------------------------------------------------
+template <>
+void VoxelVolume<Eigen::Vector3<uint8_t>>::export_pgm_stacks(
+    const char *) const;
 //------------------------------------------------------------------------------
 template <typename T>
 void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
@@ -116,8 +122,12 @@ void VoxelVolume<T>::export_raw(const char *filename) const {
 }
 //------------------------------------------------------------------------------
 template <>
-void VoxelVolume<MorphologyValue>::export_stack_for_gp(
-    long stackID, const char *filename) const;
+void VoxelVolume<MorphologyValue>::export_stack_for_gp(long,
+                                                       const char *) const;
+//------------------------------------------------------------------------------
+template <>
+void VoxelVolume<Eigen::Vector3<uint8_t>>::export_stack_for_gp(
+    long, const char *) const;
 //------------------------------------------------------------------------------
 template <typename T>
 void VoxelVolume<T>::export_stack_for_gp(long stackID,
@@ -137,6 +147,7 @@ template struct VoxelVolume<float>;
 template struct VoxelVolume<int>;
 template struct VoxelVolume<uint32_t>;
 template struct VoxelVolume<MorphologyValue>;
+template struct VoxelVolume<Eigen::Vector3<uint8_t>>;
 //------------------------------------------------------------------------------
 } // namespace fred
 //------------------------------------------------------------------------------

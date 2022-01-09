@@ -14,6 +14,7 @@ template <typename T> struct VoxelVolume {
 
   VoxelVolume() : s(0, 0, 0), spacing(0, 0, 0) {}
 
+  /// @ref data must be empty, @param s must have positive components.
   void resize(Vector3l const &s, T const &value = T());
 
   // standard functions to translate between ID and Coord
@@ -42,8 +43,12 @@ template <typename T> struct VoxelVolume {
   const_reference operator[](Vector3l const &x) const {
     return data[vx_to_vxID(x)];
   }
+  reference operator[](Vector3l const &x) { return data[vx_to_vxID(x)]; }
 
   const_reference operator()(long x0, long x1, long x2) const {
+    return data[vx_to_vxID({x0, x1, x2})];
+  }
+  reference operator()(long x0, long x1, long x2) {
     return data[vx_to_vxID({x0, x1, x2})];
   }
 

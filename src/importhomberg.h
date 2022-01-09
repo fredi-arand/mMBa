@@ -25,15 +25,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
   // fine volume stores binary volumes for subcell points: in or out
   VoxelVolume<bool> fineVolume;
-  fineVolume.s = resolution * subcellPoints;
-  //  fineVolume.set_spacing_and_data_from_s();
-  fineVolume.spacing =
-      Vector3l(1, size_t(fineVolume.s(0)),
-               size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)));
-  fineVolume().clear();
-  fineVolume().resize(size_t(fineVolume.s(0)) * size_t(fineVolume.s(1)) *
-                          size_t(fineVolume.s(2)),
-                      0);
+  fineVolume.resize(resolution * subcellPoints);
 
   cout << fineVolume().size() << endl;
 

@@ -328,12 +328,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
   VoxelVolume<MorphologyValue> morphologyVolume;
 
-  morphologyVolume.s = distanceField.s;
-  morphologyVolume.spacing = distanceField.spacing;
-
-  morphologyVolume().clear();
-  morphologyVolume().resize(morphologyVolume.s.cast<size_t>().prod(),
-                            {MorphologyValue::BACKGROUND, 0});
+  morphologyVolume.resize(distanceField.s, {MorphologyValue::BACKGROUND, 0});
 
   // each voxel in the void space is its own parent
   size_t voidVoxels = 0;
