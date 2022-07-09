@@ -550,7 +550,7 @@ void PoreMorphology::reduce_throat_volume() {
 
       // assume that throat will be changed
       bool changeThroat = true;
-      bool hasThroatNeighbor = false;
+      // bool hasThroatNeighbor = false;
 
       // check all neighbors
       for (int K = (coordinate(2) == 0 ? 0 : -1);
@@ -579,7 +579,7 @@ void PoreMorphology::reduce_throat_volume() {
               continue;
 
             if (morphologyVolume[checkVxID].state == MorphologyValue::THROAT) {
-              hasThroatNeighbor = true;
+              // hasThroatNeighbor = true;
               continue;
             }
 
