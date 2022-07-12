@@ -339,7 +339,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
   using Vector3ui8 = Vector3<uint8_t>;
 
   VoxelVolume<Vector3ui8> colorVolume;
-  colorVolume.resize(morphologyVolume.s);
+  colorVolume.resize(morphologyVolume.s, Vector3ui8(0, 0, 0));
 
   vector<size_t> colorShuffle;
   map<size_t, size_t> parentPoreToColor;
