@@ -15,8 +15,8 @@ pip install conan
 # Get dependencies
 mkdir build && cd build && conan install ..
 
-# Run cmake
-cmake ..
+# Run cmake, set Release mode
+cmake -DCMAKE_BUILD_TYPE=Release ..
 
 # Build the program, result should be in build/bin/mMBa
 cmake --build .
