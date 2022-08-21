@@ -1,5 +1,6 @@
 #include "DistanceField.h"
 #include "PoreMorphology.h"
+#include "RunFromYaml.h"
 #include "VoxelVolume.h"
 #include "examplespaper.h"
 #include "importhomberg.h"
@@ -34,9 +35,11 @@ void thesis8();          // 8 segmentations (model)
 void thesis9();          // downsampled large region (model)
 void berea();
 
-int main(int, char **) {
+int main(int argc, char **argv) {
 
-  berea();
+  if (argc != 2)
+    return 1;
+  runFromYaml(argv[1]);
   return 0;
 }
 //------------------------------------------------------------------------------

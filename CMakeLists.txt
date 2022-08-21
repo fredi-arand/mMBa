@@ -8,9 +8,10 @@ add_compile_options(-Wall -Wextra -Werror -Wfatal-errors)
 
 add_executable(mMBa
   src/main.cpp
-  src/VoxelVolume.cpp
   src/DistanceField.cpp
   src/PoreMorphology.cpp
+  src/RunFromYaml.cpp
+  src/VoxelVolume.cpp
 )
 target_include_directories(mMBa PRIVATE src)
 target_compile_features(mMBa PRIVATE cxx_std_17)
