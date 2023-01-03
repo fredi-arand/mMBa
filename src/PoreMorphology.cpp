@@ -417,7 +417,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
     }
 
     char numberBuffer[64];
-    sprintf(numberBuffer, "%06i", k);
+    snprintf(numberBuffer, 64, "%06i", k);
     ofstream myFile(string(foldername) + "stack" + numberBuffer + ".ppm");
     myFile << "P6\n"
            << colorVolume.s(0) << " " << colorVolume.s(1) << endl

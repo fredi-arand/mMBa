@@ -103,7 +103,7 @@ void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
     }
 
     char numberBuffer[64];
-    sprintf(numberBuffer, "%06i", k);
+    snprintf(numberBuffer, 64, "%06i", k);
     ofstream myFile(string(foldername) + "stack" + numberBuffer + ".pgm");
     myFile << "P5\n" << s(0) << " " << s(1) << endl << 255 << endl;
     myFile.write((const char *)currImage.data(), currImage.size());
