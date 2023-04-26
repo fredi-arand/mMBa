@@ -44,6 +44,11 @@ Finally, run
 build/bin/mMBA PATH/TO/berea.yaml
 ```
 
+### Original code
+
+The more or less undocumented original code can be found here:
+[original_code](./original_code/)
+
 ### Troubleshooting
 
 [Contact me 😉](mailto:fredi.arand@gmail.com)
