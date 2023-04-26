@@ -1,0 +1,41 @@
+
+Importing Raw Volume from "Ketton_1000c_3p00006um/Ketton_1000c_3p00006um.raw" ...
+
+Creating Distance Field (isoValue: 0.5) ...
+Iteration 1 of 3Iteration 2 of 3Iteration 3 of 3
+Duration: 346.383 s
+
+Creating Pore Morphology:
+1: Sorting balls (nr. of balls: 133042790, r>0) ...
+2: Removing fully enclosed balls, finding master balls (rMaster>1.74) ...
+0 %   r >= 39     0 %   r >= 38     0 %   r >= 37     0 %   r >= 36     0 %   r >= 35     0 %   r >= 34     0 %   r >= 33     0 %   r >= 32     0 %   r >= 31     0 %   r >= 30     0 %   r >= 29     0 %   r >= 28     0 %   r >= 27     0 %   r >= 26     0 %   r >= 25     0 %   r >= 24     0 %   r >= 23     0 %   r >= 22     0 %   r >= 21     1 %   r >= 21     1 %   r >= 20     1 %   r >= 19     2 %   r >= 19     2 %   r >= 18     2 %   r >= 17     3 %   r >= 17     3 %   r >= 16     4 %   r >= 16     4 %   r >= 15     5 %   r >= 15     5 %   r >= 14     6 %   r >= 14     7 %   r >= 14     7 %   r >= 13     8 %   r >= 13     9 %   r >= 13     9 %   r >= 12     10 %   r >= 12     11 %   r >= 12     11 %   r >= 11     12 %   r >= 11     13 %   r >= 11     14 %   r >= 11     14 %   r >= 10     15 %   r >= 10     16 %   r >= 10     17 %   r >= 10     17 %   r >= 9     18 %   r >= 9     19 %   r >= 9     20 %   r >= 9     21 %   r >= 9     21 %   r >= 8     22 %   r >= 8     23 %   r >= 8     24 %   r >= 8     25 %   r >= 8     25 %   r >= 7     26 %   r >= 7     27 %   r >= 7     28 %   r >= 7     29 %   r >= 7     30 %   r >= 7     30 %   r >= 6     31 %   r >= 6     32 %   r >= 6     33 %   r >= 6     34 %   r >= 6     35 %   r >= 6     36 %   r >= 6     36 %   r >= 5     37 %   r >= 5     38 %   r >= 5     39 %   r >= 5     40 %   r >= 5     41 %   r >= 5     42 %   r >= 5     43 %   r >= 5     43 %   r >= 4     44 %   r >= 4     45 %   r >= 4     46 %   r >= 4     47 %   r >= 4     48 %   r >= 4     49 %   r >= 4     50 %   r >= 4     51 %   r >= 4     52 %   r >= 4     52 %   r >= 3     53 %   r >= 3     54 %   r >= 3     55 %   r >= 3     56 %   r >= 3     57 %   r >= 3     58 %   r >= 3     59 %   r >= 3     60 %   r >= 3     61 %   r >= 3     61 %   r >= 2     62 %   r >= 2     63 %   r >= 2     64 %   r >= 2     65 %   r >= 2     66 %   r >= 2     67 %   r >= 2     68 %   r >= 2     69 %   r >= 2     70 %   r >= 2     71 %   r >= 2     72 %   r >= 2     72 %   r >= 1     73 %   r >= 1     74 %   r >= 1     75 %   r >= 1     76 %   r >= 1     77 %   r >= 1     78 %   r >= 1     79 %   r >= 1     80 %   r >= 1     81 %   r >= 1     82 %   r >= 1     83 %   r >= 1     84 %   r >= 1     85 %   r >= 1     86 %   r >= 1     87 %   r >= 1     88 %   r >= 1     89 %   r >= 1     90 %   r >= 1     91 %   r >= 1     92 %   r >= 1     93 %   r >= 1     94 %   r >= 1     95 %   r >= 1     96 %   r >= 1     97 %   r >= 1     98 %   r >= 1     99 %   r >= 1     100 %   r >= 1     
+Ignored Voxels: 0.00720241 %
+Duration: 308.396 s
+
+Reducing Throat Volume ...
+Duration: 34.474 s
+
+Creating statistics:
+1: Throats --> Pores
+2: Pores --> Throats
+Duration: 8.423 s
+
+Nr. of Pores: 18339
+Nr. of Throats: 40222
+Av. Coordination Nr.: 5.11304
+Av. Pore Radius: 3.82624
+Av. Throat Radius: 2.57481
+
+Merging Pores with maximum throat ratio > 0.8 with larger Pores...
+Duration: 26.214 s
+
+Creating statistics:
+1: Throats --> Pores
+2: Pores --> Throats
+Duration: 5.08 s
+
+Nr. of Pores: 4280
+Nr. of Throats: 5266
+Av. Coordination Nr.: 2.55794
+Av. Pore Radius: 5.39034
+Av. Throat Radius: 3.3148

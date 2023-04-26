@@ -1,0 +1,44 @@
+Importing Raw Volume from "homberg_625_625_625" ...
+
+Creating Distance Field (isoValue: 127.5) ...
+Iteration 3 of 3
+Duration: 80.905 s
+
+Creating Pore Morphology:
+1: Sorting balls (nr. of balls: 97954973, r>0) ...
+2: Removing fully enclosed balls, finding master balls (rMaster>1.74) ...
+100 %   r >= 1     
+Ignored Voxels: 0.00593344 %
+Duration: 217.481 s
+
+Reducing Throat Volume ...
+Duration: 30.046 s
+
+Creating statistics:
+1: Throats --> Pores
+2: Pores --> Throats
+Duration: 5.826 s
+
+Exporting histogram with correct range
+
+Nr. of Pores: 2803
+Nr. of Throats: 9866
+Av. Coordination Nr.: 8.06208
+Av. Pore Radius: 9.39967
+Av. Throat Radius: 5.48665
+
+Merging Pores with maximum throat ratio > 0.8 with larger Pores...
+Duration: 11.119 s
+
+Creating statistics:
+1: Throats --> Pores
+2: Pores --> Throats
+Duration: 4.026 s
+
+Exporting histogram with correct range
+
+Nr. of Pores: 952
+Nr. of Throats: 3251
+Av. Coordination Nr.: 7.19223
+Av. Pore Radius: 10.1473
+Av. Throat Radius: 5.29289

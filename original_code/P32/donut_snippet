@@ -1,0 +1,37 @@
+  VoxelVolume<uint8_t> donut;
+  donut.s=Vector3i(32,32,16);
+  donut.set_spacing_and_voxelValues_from_s();
+  donut.voxelValues.clear();
+  Vector3i s = donut.s;
+  donut.voxelValues.resize(donut.s.prod(),0);
+  int superSampling = 16;
+  float R = 10;
+  float r = 3;
+#pragma omp parallel for
+  for(size_t k=0; k<s(2);++k)
+    for(size_t j=0; j<s(1); ++j)
+      for(size_t i=0; i<s(0); ++i)
+      {
+        size_t hits = 0;
+        for(int K=-superSampling; K<superSampling; ++K)
+          for(int J=-superSampling; J<superSampling; ++J)
+            for(int I=-superSampling; I<superSampling; ++I)
+            {
+              Vector3f x(i+(0.5+float(I))/(2*superSampling),
+                         j+(0.5+float(J))/(2*superSampling),
+                         k+(0.5+float(K))/(2*superSampling));
+              float someTerm = R-sqrt( (x(0)-s(0)/2)*(x(0)-s(0)/2)
+                                      +(x(1)-s(1)/2)*(x(1)-s(1)/2));
+              if(someTerm*someTerm
+                 +(x(2)-s(2)/2)*(x(2)-s(2)/2)
+                 -r*r<0)
+                ++hits;
+            }
+        donut[donut.vx_to_vxID(Vector3i(i,j,k))]=255*float(hits)/(8*superSampling*superSampling*superSampling);
+      }
+
+  donut.hasValues = true;
+  donut.export_pgm_stacks("test/");
+  donut.export_raw("donut3.raw");
+
+  return 0;
