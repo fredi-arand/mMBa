@@ -20,11 +20,3 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 
 # Build the program, result should be in build/bin/mMBa
 cmake --build .
-
-# Create output dirs
-mkdir ../output/
-mkdir ../output/stacks
-
-# Run program
-cd bin 
-./mMBa
