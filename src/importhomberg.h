@@ -33,7 +33,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
   vector<Vector3f> sphereCenters;
   vector<float> sphereRadii;
   ifstream myFile(path);
-  size_t dummyCounter = 0;
+  // size_t dummyCounter = 0;
   string currentLine;
   while (getline(myFile, currentLine)) {
 
@@ -45,7 +45,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
 
     cout << endl << x0 << " " << x1 << " " << x2 << " " << r;
 
-    ++dummyCounter;
+    // ++dummyCounter;
     //    if(dummyCounter<16481)
     //      continue;
 
