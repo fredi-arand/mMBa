@@ -80,6 +80,29 @@ void PoreMorphology::create_legacy_volumes(
   }
 }
 //------------------------------------------------------------------------------
+namespace {
+//------------------------------------------------------------------------------
+enum class SortOrder { Ascending, Descending };
+//------------------------------------------------------------------------------
+template <SortOrder order> class DistanceFieldCompare {
+public:
+  explicit DistanceFieldCompare(const DistanceField &d) : d_(d) {}
+
+  bool operator()(size_t i, size_t j) const {
+    switch (order) {
+    case SortOrder::Ascending:
+      return d_[i] == d_[j] ? i < j : d_[i] < d_[j];
+    case SortOrder::Descending:
+      return d_[i] == d_[j] ? i > j : d_[i] > d_[j];
+    }
+  }
+
+private:
+  const DistanceField &d_;
+};
+//------------------------------------------------------------------------------
+} // namespace
+//------------------------------------------------------------------------------
 void PoreMorphology::merge_pores(float throatRatio) {
 
   cout << "\nMerging Pores with maximum throat ratio > " << throatRatio
@@ -146,14 +169,8 @@ void PoreMorphology::merge_pores(float throatRatio) {
   }
 
   // sort ascending
-  // http://stackoverflow.com/questions/8736997/using-lambdas-in-maps
-  map<size_t, set<set<uint32_t>>,
-      function<bool(size_t const &, size_t const &)>>
-  poreCentersToThroats([&](size_t const &i, size_t const &j) -> bool {
-    return distanceField[i] == distanceField[j]
-               ? i < j
-               : distanceField[i] < distanceField[j];
-  });
+  DistanceFieldCompare<SortOrder::Ascending> cmp(distanceField);
+  map<size_t, set<set<uint32_t>>, decltype(cmp)> poreCentersToThroats(cmp);
 
   for (auto const &throat : throats)
     for (auto const &parent : throat) {
@@ -496,18 +513,15 @@ void PoreMorphology::reduce_throat_volume() {
   if (!parallelFlag)
     omp_set_num_threads(1);
 
+  DistanceFieldCompare<SortOrder::Descending> cmp(distanceField);
+
 #pragma omp parallel for
   for (size_t throatID = 0; throatID < throatsAndConnectedVoxels.size();
        ++throatID) {
 
     //    cout << endl << throatID << endl;
 
-    set<size_t, function<bool(size_t const &, size_t const &)>> throatVoxels(
-        [&](size_t const &a, size_t const &b) -> bool {
-          return distanceField[a] == distanceField[b]
-                     ? (a > b)
-                     : distanceField[a] > distanceField[b];
-        });
+    set<size_t, decltype(cmp)> throatVoxels(cmp);
 
     //    cout << "\nset defined\n";
 
@@ -516,12 +530,7 @@ void PoreMorphology::reduce_throat_volume() {
     //    cout << "\nvector size: " << throatVoxelVector.size();
     //    cout << endl;
 
-    sort(throatVoxelVector.begin(), throatVoxelVector.end(),
-         [&](size_t const &a, size_t const &b) {
-           return distanceField[a] == distanceField[b]
-                      ? (a > b)
-                      : distanceField[a] > distanceField[b];
-         });
+    sort(throatVoxelVector.begin(), throatVoxelVector.end(), cmp);
 
     //    cout << "\nsorted\n";
 
@@ -697,19 +706,12 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
     cout << scientific << r_infimum << " < r <= " << r_max << endl;
 
 #ifdef ENABLE_GNU_PARALLEL
-    __gnu_parallel::sort(processingOrder.begin(), processingOrder.end(),
-                         [&](size_t const &i, size_t const &j) {
-                           return distanceField[i] == distanceField[j]
-                                      ? i < j // for reproducibility
-                                      : distanceField[i] > distanceField[j];
-                         });
+    __gnu_parallel::sort(
+        processingOrder.begin(), processingOrder.end(),
+        DistanceFieldCompare<SortOrder::Descending>(distanceField));
 #else
     sort(processingOrder.begin(), processingOrder.end(),
-         [&](size_t const &i, size_t const &j) {
-           return distanceField[i] == distanceField[j]
-                      ? i < j // for reproducibility
-                      : distanceField[i] > distanceField[j];
-         });
+         DistanceFieldCompare<SortOrder::Descending>(distanceField));
 #endif
 
     if (processingOrder.size() == 0) {
