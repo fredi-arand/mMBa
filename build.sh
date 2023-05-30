@@ -10,10 +10,10 @@ source .venv/bin/activate
 # pip install --upgrade pip
 
 # Install conan
-pip install conan
+pip install conan==1.60.0
 
-# Get dependencies
-mkdir build && cd build && conan install ..
+# Get dependencies and build them
+mkdir build && cd build && conan install --build="*" ..
 
 # Run cmake, set Release mode
 cmake -DCMAKE_BUILD_TYPE=Release ..
