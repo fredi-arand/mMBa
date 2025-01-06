@@ -10,7 +10,7 @@ source .venv/bin/activate
 # pip install --upgrade pip
 
 # Install conan
-pip install conan==1.60.0
+pip install conan==1.66.0
 
 # Get dependencies and build them
 mkdir build && cd build && conan install --build="*" ..
