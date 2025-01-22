@@ -104,10 +104,10 @@ inline void gnuplot_palette_file(std::string fileName,
 }
 //------------------------------------------------------------------------------
 inline void
-update_neighbors_box(DistanceField const &distanceField,
-                     VoxelVolume<MorphologyValue> &morphologyVolume,
-                     size_t const &voxelIndex_i,
-                     std::map<uint32_t, size_t> const &parentToVoxelIndex) {
+update_neighbors(DistanceField const &distanceField,
+                 VoxelVolume<MorphologyValue> &morphologyVolume,
+                 size_t const &voxelIndex_i,
+                 std::map<uint32_t, size_t> const &parentToVoxelIndex) {
   using namespace std;
   auto const &s = morphologyVolume.s;
 
@@ -439,8 +439,8 @@ inline void mb_step_by_step(DistanceField const &distanceField,
       flag_i = morphologyValue_i.state;
 
       // check and update neighborhood
-      update_neighbors_box(distanceField, morphologyVolume, voxelIndex_i,
-                           parentToVoxelIndex);
+      update_neighbors(distanceField, morphologyVolume, voxelIndex_i,
+                       parentToVoxelIndex);
       //    update_neighbors_flood(voxelIndex_i);
     }
 

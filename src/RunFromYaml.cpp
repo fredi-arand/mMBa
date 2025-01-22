@@ -38,6 +38,11 @@ void runFromYaml(const char *yamlPath) {
   DistanceField distanceField =
       createDistanceFile(voxelFormat, s, path.c_str(), isoValue);
   PoreMorphology poreMorphology(distanceField);
+
+  if (YAML::Node exportSkeletonPath = config["export skeleton path"]) {
+    poreMorphology.exportSkeletonPath = exportSkeletonPath.as<std::string>();
+  }
+
   poreMorphology.create_pore_morphology(0.0, 0.0);
   poreMorphology.reduce_throat_volume();
   poreMorphology.merge_pores(0.8);

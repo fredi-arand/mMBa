@@ -15,10 +15,9 @@ namespace fred {
 struct PoreMorphology {
 
   uint32_t parentCounter{0};
-  float smallPadding{0.5};
   float epsilon{0.2f};
-
   bool parallelFlag{true};
+  std::string exportSkeletonPath;
 
   // Silin, Patzek (2006): Pore space morphology analysis using maximal
   // inscribed spheres
@@ -39,9 +38,11 @@ struct PoreMorphology {
   void create_pore_morphology(float rMinParent, float rMinBall);
   //    void create_pore_morphology_single(float rMinParent, float rMinBall);
 
-  void update_neighbors_flood(size_t const &voxelIndex_i);
-  void update_neighbors_box(const size_t &voxelIndex_i);
-  bool quick_neighbor_check(size_t i);
+  void update_neighbors(size_t i);
+
+  /// @brief Set morphology value for voxel i from the 26 neighboring voxels.
+  /// @param i Voxel id.
+  void set_from_voxel_neighborhood(size_t i);
 
   void export_ppm_stacks(const char *foldername);
 

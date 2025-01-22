@@ -1,4 +1,5 @@
 #include "PoreMorphology.h"
+#include "Diagnose.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -19,49 +20,28 @@ using namespace std;
 using namespace std::chrono;
 using namespace Eigen;
 //------------------------------------------------------------------------------
-bool PoreMorphology::quick_neighbor_check(size_t i) {
-
-  bool ignoreBall = false;
-
+void PoreMorphology::set_from_voxel_neighborhood(size_t i) {
+  MorphologyValue &m_i = morphologyVolume[i];
+  ASSURE(m_i.parentId == 0, "");
   Vector3l x_i = morphologyVolume.vxID_to_vx(i);
-
-  bool hasNeighbor = false;
-  bool hasTwoNeighbors = false;
-  uint32_t neighborLabel = 0;
   for (int K = -1; K <= 1; ++K)
     for (int J = -1; J <= 1; ++J)
       for (int I = -1; I <= 1; ++I) {
+        // Neighbor j.
         Vector3l x_j = x_i + Vector3l(I, J, K);
         MorphologyValue m_j = morphologyVolume[x_j];
 
-        uint32_t m_j_state = m_j.state;
-        uint32_t m_j_label = m_j.parentId;
+        if (m_j.state == MorphologyValue::BACKGROUND ||
+            m_j.state == MorphologyValue::THROAT || m_j.parentId == 0)
+          continue; // Neighbor j does not influence i.
 
-        if (m_j_state == MorphologyValue::BACKGROUND ||
-            m_j_state == MorphologyValue::THROAT || m_j_label == 0)
-          continue;
-
-        if (!hasNeighbor) {
-          hasNeighbor = true;
-          neighborLabel = m_j_label;
-          continue;
+        if (m_i.parentId == 0) {
+          m_i.parentId = m_j.parentId;
+        } else if (m_i.parentId != m_j.parentId) {
+          m_i.state = MorphologyValue::THROAT;
+          return;
         }
-
-        if (m_j_label != neighborLabel)
-          hasTwoNeighbors = true;
       }
-
-  if (hasTwoNeighbors) {
-    morphologyVolume[i].state = MorphologyValue::THROAT;
-    ignoreBall = true;
-    return ignoreBall;
-  }
-
-  if (hasNeighbor) {
-    morphologyVolume[i].parentId = neighborLabel;
-  }
-
-  return ignoreBall;
 }
 //------------------------------------------------------------------------------
 void PoreMorphology::create_legacy_volumes(
@@ -612,7 +592,7 @@ void PoreMorphology::reduce_throat_volume() {
 
       //      if(!hasThroatNeighbor && !neighborFound)
       //      {
-      //#pragma omp critical
+      // #pragma omp critical
       //        cout << "\nbad! removing throat voxel enclosed by material.\n";
       //        throatVoxels.erase(indexIterator);
       //        indexIterator = throatVoxels.begin();
@@ -667,6 +647,9 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
       morphologyVolume[n] = {MorphologyValue::INIT, 0};
     }
 
+  cout << "\nVoid space fraction: "
+       << double(voidVoxels) / distanceField.s.prod() << "\n";
+
   if (voidVoxels == 0) {
     cout << "\nnothing to do\n";
     return;
@@ -683,6 +666,16 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 #else
   r_max = *(max_element(distanceField().begin(), distanceField().end()));
 #endif
+
+  VoxelVolume<float> skeletonVolume;
+  float skeletonValue;
+  bool visualizeSkeleton = !exportSkeletonPath.empty();
+  if (visualizeSkeleton) {
+    skeletonValue = 2 * log2(1.f + r_max);
+    skeletonVolume = distanceField;
+    for (auto &v : skeletonVolume.data)
+      v = log2(1.f + v);
+  }
 
   float r_infimum = r_max;
 
@@ -721,9 +714,9 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
     //    size_t progressCounter = 0;
     //    size_t forLoopCounter=0;
-    for (auto const &voxelIndex_i : processingOrder) {
+    for (size_t i : processingOrder) {
 
-      float const &r_i = distanceField[voxelIndex_i];
+      float const &r_i = distanceField[i];
 
       //      while(progressCounter <=
       //      (forLoopCounter*100)/processingOrder.size())
@@ -737,44 +730,47 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
       //    if(roundedR_i<omp_get_num_threads())
       //      omp_set_num_threads(1);
 
-      MorphologyValue &morphologyValue_i = morphologyVolume[voxelIndex_i];
-      uint32_t flag_i = morphologyValue_i.state;
-      uint32_t parent_i = morphologyValue_i.parentId;
+      MorphologyValue &m_i = morphologyVolume[i];
 
       // cases: throat, enclosed
-      if (flag_i != MorphologyValue::INIT)
+      if (m_i.state != MorphologyValue::INIT)
         continue;
 
+      bool i_from_direct_neighborhood = false;
       if (1) {
-        // ignored voxels due to unlucky inclusion with epsilon
-        if (parent_i == 0)
-          if (quick_neighbor_check(voxelIndex_i))
-            continue;
-
-        // morphologyValue_i may be changed by quick neighbor check
-        flag_i = morphologyValue_i.state;
-        parent_i = morphologyValue_i.parentId;
+        // Due to the epsilon inclusion criterion, it might happen that i was
+        // not found by a larger maximal ball j, since j could have been
+        // enclosed by an even larger ball k
+        if (m_i.parentId == 0) {
+          set_from_voxel_neighborhood(i);
+          i_from_direct_neighborhood =
+              (m_i.state != MorphologyValue::THROAT) && (m_i.parentId != 0);
+        }
       }
 
       // case: not allowed to be parent
-      if (r_i < rMinParent && flag_i == MorphologyValue::INIT && parent_i == 0)
+      if (r_i < rMinParent && m_i.state == MorphologyValue::INIT &&
+          m_i.parentId == 0)
         continue;
 
+      // Basically, one can assume that all voxels which contribute to the
+      // morphology are skeleton voxels.
+      if (visualizeSkeleton && !i_from_direct_neighborhood)
+        skeletonVolume[i] = skeletonValue;
+
       // case: parent.
-      if (parent_i == 0) {
+      if (m_i.parentId == 0) {
         ++parentCounter;
-        parentToVoxelIndex[parentCounter] = voxelIndex_i;
-        morphologyValue_i.parentId = parentCounter;
-        parent_i = morphologyValue_i.parentId;
+        parentToVoxelIndex[parentCounter] = i;
+        m_i.parentId = parentCounter;
       }
 
       // ball always encloses itself. Morphology is fixed at this point.
-      morphologyValue_i.state = MorphologyValue::ENCLOSED;
-      flag_i = morphologyValue_i.state;
+      m_i.state = MorphologyValue::ENCLOSED;
 
       // check and update neighborhood
-      update_neighbors_box(voxelIndex_i);
-      //    update_neighbors_flood(voxelIndex_i);
+      update_neighbors(i);
+      //    update_neighbors_flood(i);
     }
 
     r_max = r_infimum;
@@ -792,9 +788,12 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
   poreMorphologyCreated = true;
 
-  cout << "\nIgnored Void Voxel Fraction: " << float(ignoredVoxels) / voidVoxels
-       << endl;
+  cout << "\nIgnored Void Voxel Fraction: "
+       << double(ignoredVoxels) / voidVoxels << endl;
   cout << "Pores: " << parentToVoxelIndex.size() << endl;
+
+  if (visualizeSkeleton)
+    skeletonVolume.export_pgm_stacks(exportSkeletonPath.c_str());
 
   high_resolution_clock::time_point tEnd = high_resolution_clock::now();
   cout << "Duration: "
@@ -802,111 +801,17 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
        << " s" << endl;
 }
 //------------------------------------------------------------------------------
-void PoreMorphology::update_neighbors_flood(size_t const &voxelIndex_i) {
-  auto const &s = morphologyVolume.s;
+void PoreMorphology::update_neighbors(size_t i) {
 
-  Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
+  Vector3l const &s = morphologyVolume.s;
+  Vector3l const x_i = morphologyVolume.vxID_to_vx(i);
 
-  MorphologyValue const &morphologyValue_i = morphologyVolume[voxelIndex_i];
-  uint32_t parent_i = morphologyValue_i.parentId;
+  MorphologyValue const &m_i = morphologyVolume[i];
 
-  float const &r_i = distanceField[voxelIndex_i];
-  long const roundedR_i = floor(r_i);
-  float const &r_i_squared = r_i * r_i;
-
-  vector<Vector3l> floodStack;
-  floodStack.reserve(pow(2 * roundedR_i + 1, 3));
-  floodStack.push_back(voxelCoordinate_i);
-
-  VoxelVolume<uint8_t> processedVoxels;
-  processedVoxels.resize(
-      Vector3l(2 * roundedR_i + 1, 2 * roundedR_i + 1, 2 * roundedR_i + 1), 0);
-  processedVoxels(roundedR_i, roundedR_i, roundedR_i) = 1;
-
-  for (size_t n = 0; n != floodStack.size(); ++n) {
-
-    Vector3l const voxelCoordinate_j_old = floodStack[n];
-
-    for (long neighborIndex = 0; neighborIndex < 6; ++neighborIndex) {
-      Vector3l voxelCoordinate_j = voxelCoordinate_j_old;
-      voxelCoordinate_j(neighborIndex / 2) += neighborIndex % 2 ? 1 : -1;
-
-      Vector3l d_voxel_ij = voxelCoordinate_j - voxelCoordinate_i;
-
-      float r_ij_squared = d_voxel_ij.cast<float>().squaredNorm();
-
-      if (r_ij_squared > r_i_squared || (voxelCoordinate_j.array() < 0).any() ||
-          (voxelCoordinate_j.array() >= s.array()).any())
-        continue;
-
-      if ((d_voxel_ij.array().abs() > roundedR_i).any() ||
-          processedVoxels[d_voxel_ij +
-                          Vector3l(roundedR_i, roundedR_i, roundedR_i)])
-        continue;
-
-      processedVoxels()[processedVoxels.vx_to_vxID(
-          d_voxel_ij + Vector3l(roundedR_i, roundedR_i, roundedR_i))] = true;
-
-      size_t const voxelIndex_j =
-          morphologyVolume.vx_to_vxID(voxelCoordinate_j);
-
-      MorphologyValue &morphologyValue_j = morphologyVolume[voxelIndex_j];
-      uint32_t flag_j = morphologyValue_j.state;
-      uint32_t parent_j = morphologyValue_j.parentId;
-
-      if (flag_j != MorphologyValue::INIT && flag_j != MorphologyValue::THROAT)
-        continue;
-
-      float const &r_j = distanceField[voxelIndex_j];
-
-      if (r_j > r_i)
-        continue;
-
-      floodStack.push_back(voxelCoordinate_j);
-
-      float r_ij = sqrt(r_ij_squared);
-
-      // change to child if possible
-      if (parent_j == 0) {
-        morphologyValue_j.parentId = parent_i;
-        parent_j = parent_i;
-        //        cout << endl << "child";
-      }
-
-      if (parent_j == parent_i) {
-
-        // try to enclose
-        if (r_ij + r_j <= r_i + 0.2 * r_j) {
-          morphologyValue_j.state = MorphologyValue::ENCLOSED;
-          flag_j = MorphologyValue::ENCLOSED;
-          //          cout << endl << "enclosed";
-        }
-
-        continue;
-      }
-
-      // some value other than the current parent has been written
-      // --> mark as throat
-      morphologyValue_j.state = MorphologyValue::THROAT;
-      flag_j = MorphologyValue::THROAT;
-      //      cout << endl << "throat";
-    }
-  }
-}
-//------------------------------------------------------------------------------
-void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
-
-  auto const &s = morphologyVolume.s;
-
-  Vector3l const voxelCoordinate_i = morphologyVolume.vxID_to_vx(voxelIndex_i);
-
-  MorphologyValue const &morphologyValue_i = morphologyVolume[voxelIndex_i];
-  uint32_t parent_i = morphologyValue_i.parentId;
-
-  float const &r_i = distanceField[voxelIndex_i];
+  float const &r_i = distanceField[i];
   float const r_i_padded = r_i + 0.5;
   long const roundedR_i_padded = floor(r_i_padded);
-  float const &r_i_padded_squared = r_i_padded * r_i_padded;
+  float const r_i_padded_squared = r_i_padded * r_i_padded;
 
   for (long K = -roundedR_i_padded; K <= roundedR_i_padded; ++K)
     for (long J = -roundedR_i_padded; J <= roundedR_i_padded; ++J)
@@ -914,47 +819,39 @@ void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
         if (K == 0 && J == 0 && I == 0)
           continue;
 
-        Vector3l const voxelCoordinate_j =
-            voxelCoordinate_i + Vector3l(I, J, K);
-        if ((voxelCoordinate_j.array() < 0).any() ||
-            (voxelCoordinate_j.array() >= s.array()).any())
+        Vector3l const x_j = x_i + Vector3l(I, J, K);
+        if ((x_j.array() < 0).any() || (x_j.array() >= s.array()).any())
           continue;
 
-        float r_ij_squared =
-            (voxelCoordinate_i - voxelCoordinate_j).cast<float>().squaredNorm();
-        if (r_ij_squared > r_i_padded_squared)
+        float d_ij_squared = (x_i - x_j).cast<float>().squaredNorm();
+        if (d_ij_squared > r_i_padded_squared)
           continue;
 
-        size_t const voxelIndex_j =
-            morphologyVolume.vx_to_vxID(voxelCoordinate_j);
+        size_t const j = morphologyVolume.vx_to_vxID(x_j);
 
-        MorphologyValue &morphologyValue_j = morphologyVolume[voxelIndex_j];
-        uint32_t flag_j = morphologyValue_j.state;
-        uint32_t parent_j = morphologyValue_j.parentId;
+        MorphologyValue &m_j = morphologyVolume[j];
 
-        if (flag_j != MorphologyValue::INIT)
+        if (m_j.state != MorphologyValue::INIT)
           continue;
 
-        float const &r_j = distanceField[voxelIndex_j];
+        float const &r_j = distanceField[j];
         float const r_j_padded = r_j + 0.5;
         if (r_j_padded > r_i_padded) { /*cout << "\nblub\n";*/
           continue;
         }
 
-        float r_ij = sqrt(r_ij_squared);
+        float d_ij = sqrt(d_ij_squared);
 
         // update parent if applicable
-        if (parent_j == 0) {
-          morphologyValue_j.parentId = parent_i;
-          parent_j = parent_i;
+        if (m_j.parentId == 0) {
+          m_j.parentId = m_i.parentId;
         }
 
-        if (parent_j == parent_i) {
+        if (m_j.parentId == m_i.parentId) {
 
           // try to enclose
-          if (r_ij + r_j <= r_i + epsilon * r_j) {
-            morphologyValue_j.state = MorphologyValue::ENCLOSED;
-            flag_j = MorphologyValue::ENCLOSED;
+          if (d_ij + r_j <= r_i + .9f) {
+            m_j.state = MorphologyValue::ENCLOSED;
           }
 
           continue;
@@ -962,8 +859,7 @@ void PoreMorphology::update_neighbors_box(size_t const &voxelIndex_i) {
 
         // some value other than the current parent has been written
         // --> mark as throat
-        morphologyValue_j.state = MorphologyValue::THROAT;
-        flag_j = MorphologyValue::ENCLOSED;
+        m_j.state = MorphologyValue::THROAT;
       }
 }
 //------------------------------------------------------------------------------
