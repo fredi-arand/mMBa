@@ -1,5 +1,6 @@
 #include "PoreMorphology.h"
 #include "Diagnose.h"
+#include "Parallel.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -354,8 +355,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
   shuffle(colorShuffle.begin(), colorShuffle.end(),
           std::default_random_engine(seed));
 
-#pragma omp parallel for
-  for (size_t n = 0; n < morphologyVolume().size(); ++n)
+  parallelFor(morphologyVolume().size(), [&](size_t n) {
     if (morphologyVolume[n].state != MorphologyValue::BACKGROUND) {
       if (morphologyVolume[n].state == MorphologyValue::THROAT) {
         colorVolume[n] = Vector3ui8(127, 127, 127);
@@ -393,12 +393,12 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
         colorVolume[n] = someColor;
       }
     }
+  });
 
   for (int k = 0; k < colorVolume.s(2); ++k) {
     vector<uint8_t> currImage(colorVolume.s(1) * colorVolume.s(0) * 3, 0);
 
-#pragma omp parallel for
-    for (int j = 0; j < colorVolume.s(1); ++j) {
+    parallelFor(colorVolume.s(1), [&](long j) {
       auto pxIt = currImage.begin() +
                   3 * (colorVolume.spacing(1) * (colorVolume.s(1) - 1 - j));
 
@@ -411,7 +411,7 @@ void PoreMorphology::export_ppm_stacks(const char *foldername) {
         *(pxIt + 1) = (*vxIt)(1);
         *(pxIt + 2) = (*vxIt)(2);
       }
-    }
+    });
 
     char numberBuffer[64];
     snprintf(numberBuffer, 64, "%06i", k);
@@ -490,15 +490,9 @@ void PoreMorphology::reduce_throat_volume() {
     throatsAndConnectedVoxels.push_back(floodFillRegion);
   }
 
-  if (!parallelFlag)
-    omp_set_num_threads(1);
-
   DistanceFieldCompare<SortOrder::Descending> cmp(distanceField);
 
-#pragma omp parallel for
-  for (size_t throatID = 0; throatID < throatsAndConnectedVoxels.size();
-       ++throatID) {
-
+  parallelFor(throatsAndConnectedVoxels.size(), [&](size_t throatID) {
     //    cout << endl << throatID << endl;
 
     set<size_t, decltype(cmp)> throatVoxels(cmp);
@@ -619,7 +613,7 @@ void PoreMorphology::reduce_throat_volume() {
       morphologyVolume[morphologyVolume.vx_to_vxID(coordinate)] = {
           MorphologyValue::ENCLOSED, neighbourValue};
     }
-  }
+  });
 
   throatsReduced = true;
 
@@ -660,12 +654,7 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
   processingOrder.reserve(distanceField().size() / 16);
 
   float r_max;
-#ifdef ENABLE_GNU_PARALLEL
-  r_max = *(__gnu_parallel::max_element(distanceField().begin(),
-                                        distanceField().end()));
-#else
   r_max = *(max_element(distanceField().begin(), distanceField().end()));
-#endif
 
   VoxelVolume<float> skeletonVolume;
   float skeletonValue;
@@ -698,14 +687,8 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
     cout << "Pores: " << parentToVoxelIndex.size() << endl;
     cout << scientific << r_infimum << " < r <= " << r_max << endl;
 
-#ifdef ENABLE_GNU_PARALLEL
-    __gnu_parallel::sort(
-        processingOrder.begin(), processingOrder.end(),
-        DistanceFieldCompare<SortOrder::Descending>(distanceField));
-#else
-    sort(processingOrder.begin(), processingOrder.end(),
-         DistanceFieldCompare<SortOrder::Descending>(distanceField));
-#endif
+    parallelSort(processingOrder.begin(), processingOrder.end(),
+                 DistanceFieldCompare<SortOrder::Descending>(distanceField));
 
     if (processingOrder.size() == 0) {
       r_max = r_infimum;
@@ -726,9 +709,6 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
       //        ++progressCounter;
       //      }
       //      ++forLoopCounter;
-
-      //    if(roundedR_i<omp_get_num_threads())
-      //      omp_set_num_threads(1);
 
       MorphologyValue &m_i = morphologyVolume[i];
 
@@ -775,8 +755,6 @@ void PoreMorphology::create_pore_morphology(float rMinParent, float rMinBall) {
 
     r_max = r_infimum;
   }
-
-  //  omp_set_num_threads(0);
 
   // count changed voxels
   size_t ignoredVoxels = 0;

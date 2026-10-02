@@ -1,10 +1,10 @@
 #include "VoxelVolume.h"
+#include "Parallel.h"
 #include <algorithm>
 #include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <numeric>
-#include <omp.h>
 #include <stdexcept>
 #include <string>
 //------------------------------------------------------------------------------
@@ -92,15 +92,14 @@ void VoxelVolume<T>::export_pgm_stacks(const char *foldername) const {
   for (int k = 0; k < s(2); ++k) {
     vector<uint8_t> currImage(s(1) * s(0), 0);
 
-#pragma omp parallel for
-    for (int j = 0; j < s(1); ++j) {
+    parallelFor(s(1), [&](long j) {
       auto pxIt = currImage.begin() + spacing(1) * (s(1) - 1 - j);
 
       for (auto vxIt = data.begin() + spacing.dot(Vector3l(0, j, k));
            vxIt != data.begin() + spacing.dot(Vector3l(0, j + 1, k));
            ++vxIt, ++pxIt)
         *pxIt = ((*vxIt - minElement) * 255) / (maxElement - minElement);
-    }
+    });
 
     char numberBuffer[64];
     snprintf(numberBuffer, 64, "%06i", k);

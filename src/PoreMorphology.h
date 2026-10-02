@@ -5,10 +5,6 @@
 #include <map>
 #include <vector>
 
-#ifdef ENABLE_GNU_PARALLEL
-#include <parallel/algorithm>
-#endif
-
 #define PI 3.14159265358979323846
 namespace fred {
 
@@ -16,7 +12,6 @@ struct PoreMorphology {
 
   uint32_t parentCounter{0};
   float epsilon{0.2f};
-  bool parallelFlag{true};
   std::string exportSkeletonPath;
 
   // Silin, Patzek (2006): Pore space morphology analysis using maximal

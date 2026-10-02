@@ -1,4 +1,5 @@
 #include "DistanceField.h"
+#include "Parallel.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <chrono>
@@ -57,17 +58,16 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
   for (size_t dimStart = 0; dimStart < 3; ++dimStart) {
     VoxelVolume<float> testDistanceField;
     testDistanceField.resize(s, posInf);
-#pragma omp parallel for
-    for (size_t n = 0; n < distanceField().size(); ++n)
+    parallelFor(distanceField().size(), [&](size_t n) {
       if (voxelVolume[n] >= isoValue)
         testDistanceField[n] = 0;
+    });
 
     cout << "\rIteration " << dimStart + 1 << " of 3" << flush;
 
     for (size_t dim = dimStart; dim < dimStart + 3; ++dim)
-    // run multiple lines in parallel
-#pragma omp parallel for
-      for (int k = 0; k < s((dim + 2) % 3); ++k)
+      // run multiple lines in parallel
+      parallelFor(s((dim + 2) % 3), [&](size_t k) {
         for (int j = 0; j < s((dim + 1) % 3); ++j) {
 
           Vector3l vx(0, 0, 0);
@@ -179,20 +179,19 @@ DistanceField DistanceField::create(VoxelVolume<T> const &voxelVolume,
           }
 
         } // end of 1D line iteration
-          // end of plane iteration
+      }); // end of plane iteration
           // end of volume iteration in dim-direction
 
         // update minDistanceField
-#pragma omp parallel for // NOLINT
-    for (size_t n = 0; n < testDistanceField().size(); ++n)
+    parallelFor(testDistanceField().size(), [&](size_t n) {
       if (testDistanceField[n] < distanceField[n])
         distanceField[n] = testDistanceField[n];
+    });
 
   } // end of distance field iteration (exact in dimension dimStart)
 
-#pragma omp parallel for
-  for (size_t n = 0; n < distanceField().size(); ++n)
-    distanceField[n] = sqrt(distanceField[n]);
+  parallelFor(distanceField().size(),
+              [&](size_t n) { distanceField[n] = sqrt(distanceField[n]); });
 
   cout << endl;
 

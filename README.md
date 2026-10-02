@@ -13,35 +13,35 @@ Typically, you might want to "see something". In order to do so, download the
 [Berea sandstone](https://www.imperial.ac.uk/earth-science/research/research-groups/pore-scale-modelling/micro-ct-images-and-networks/berea-sandstone/)
 sample.
 
-Next, have a look at `build.sh` (and maybe `src/main.cpp`). If you think that it
-will probably work out, run
+Next, install [CMake](https://cmake.org) and [Eigen](https://eigen.tuxfamily.org),
+e.g.
+
+```bash
+brew install cmake eigen                # macOS
+sudo apt install cmake libeigen3-dev    # Debian/Ubuntu
+```
+
+Then build:
 
 ```bash
 ./build.sh
 ```
 
-Next, you'll need to create a yaml file, for example `berea.yaml`:
-
-```yaml
-version: 0.1
-input volume:
-  path: PATH/TO/Berea.raw
-  voxel format: u8
-  resolution:
-    width: 400
-    height: 400
-    depth: 400
-  iso value: automatic
-output volumes path: PATH/TO/volumes
-visualization path: PATH/TO/visualization
-```
-
-See also [YamlSpecification.md](./YamlSpecification.md).
-
 Finally, run
 
 ```bash
-build/bin/mMBA PATH/TO/berea.yaml
+build/mMBa PATH/TO/Berea.raw --size 400x400x400 --visualization PATH/TO/visualization
+```
+
+See `build/mMBa --help` for all options. To keep track of your runs, put the
+commands in a shell script.
+
+### Tab completion (zsh)
+
+zsh can complete the options from `--help`; add this to your `~/.zshrc`:
+
+```zsh
+compdef _gnu_generic mMBa
 ```
 
 ### Original code

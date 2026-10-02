@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DistanceField.h"
+#include "Parallel.h"
 #include "PoreMorphology.h"
 #include <fstream>
 #include <iostream>
@@ -20,7 +21,7 @@ gnuplot_distance_field_and_maximal_balls(std::string const &folderName,
   srand(0);
   map<size_t, float> color;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
-    color[n] = float(rand()) / RAND_MAX;
+    color[n] = float(rand()) / float(RAND_MAX);
 
   for (int i = 0; i < s(0); ++i)
     for (int j = 0; j < s(1); ++j) {
@@ -71,7 +72,7 @@ inline void gnuplot_palette_file(std::string fileName,
   srand(0);
   map<size_t, float> color;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
-    color[n] = float(rand()) / RAND_MAX;
+    color[n] = float(rand()) / float(RAND_MAX);
 
   ofstream image_palette_file(fileName);
   for (size_t voxelIndex = 0; voxelIndex < s.cast<size_t>().prod();
@@ -187,7 +188,7 @@ update_neighbors(DistanceField const &distanceField,
   srand(0);
   map<size_t, float> color;
   for (size_t n = 0; n < s.cast<size_t>().prod(); ++n)
-    color[n] = float(rand()) / RAND_MAX;
+    color[n] = float(rand()) / float(RAND_MAX);
 
   vector<size_t> processingOrder;
 
@@ -195,21 +196,12 @@ update_neighbors(DistanceField const &distanceField,
     if (distanceField[index] > 0)
       processingOrder.push_back(index);
 
-#ifdef ENABLE_GNU_PARALLEL
-  __gnu_parallel::sort(processingOrder.begin(), processingOrder.end(),
-                       [&](size_t const &i, size_t const &j) {
-                         return distanceField[i] == distanceField[j]
-                                    ? i < j // for reproducibility
-                                    : distanceField[i] > distanceField[j];
-                       });
-#else
-  sort(processingOrder.begin(), processingOrder.end(),
-       [&](size_t const &i, size_t const &j) {
-         return distanceField[i] == distanceField[j]
-                    ? i < j // for reproducibility
-                    : distanceField[i] > distanceField[j];
-       });
-#endif
+  parallelSort(processingOrder.begin(), processingOrder.end(),
+               [&](size_t const &i, size_t const &j) {
+                 return distanceField[i] == distanceField[j]
+                            ? i < j // for reproducibility
+                            : distanceField[i] > distanceField[j];
+               });
 
   for (size_t n = 0; n < processingOrder.size(); ++n) {
     size_t voxelIndex = processingOrder[n];
@@ -347,12 +339,7 @@ inline void mb_step_by_step(DistanceField const &distanceField,
   processingOrder.clear();
   processingOrder.reserve(distanceField().size() / 16);
 
-#ifdef ENABLE_GNU_PARALLEL
-  float r_max = *(__gnu_parallel::max_element(distanceField().begin(),
-                                              distanceField().end()));
-#else
   float r_max = *(max_element(distanceField().begin(), distanceField().end()));
-#endif
 
   float r_infimum = r_max;
 
@@ -375,21 +362,12 @@ inline void mb_step_by_step(DistanceField const &distanceField,
     cout << "Pores: " << parentToVoxelIndex.size() << endl;
     cout << scientific << r_infimum << " < r <= " << r_max << endl;
 
-#ifdef ENABLE_GNU_PARALLEL
-    __gnu_parallel::sort(processingOrder.begin(), processingOrder.end(),
-                         [&](size_t const &i, size_t const &j) {
-                           return distanceField[i] == distanceField[j]
-                                      ? i < j // for reproducibility
-                                      : distanceField[i] > distanceField[j];
-                         });
-#else
-    sort(processingOrder.begin(), processingOrder.end(),
-         [&](size_t const &i, size_t const &j) {
-           return distanceField[i] == distanceField[j]
-                      ? i < j // for reproducibility
-                      : distanceField[i] > distanceField[j];
-         });
-#endif
+    parallelSort(processingOrder.begin(), processingOrder.end(),
+                 [&](size_t const &i, size_t const &j) {
+                   return distanceField[i] == distanceField[j]
+                              ? i < j // for reproducibility
+                              : distanceField[i] > distanceField[j];
+                 });
 
     if (processingOrder.size() == 0) {
       r_max = r_infimum;
@@ -410,9 +388,6 @@ inline void mb_step_by_step(DistanceField const &distanceField,
       //        ++progressCounter;
       //      }
       //      ++forLoopCounter;
-
-      //    if(roundedR_i<omp_get_num_threads())
-      //      omp_set_num_threads(1);
 
       MorphologyValue &morphologyValue_i = morphologyVolume[voxelIndex_i];
       uint32_t flag_i = morphologyValue_i.state;
@@ -446,8 +421,6 @@ inline void mb_step_by_step(DistanceField const &distanceField,
 
     r_max = r_infimum;
   }
-
-  //  omp_set_num_threads(0);
 
   // count changed voxels
   size_t ignoredVoxels = 0;

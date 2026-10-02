@@ -1,7 +1,0 @@
-[requires]
-eigen/3.4.0
-llvm-openmp/18.1.8
-yaml-cpp/0.7.0
-
-[generators]
-cmake

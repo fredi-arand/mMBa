@@ -1,19 +1,19 @@
-cmake_minimum_required(VERSION 3.0)
-project(mMBa)
+cmake_minimum_required(VERSION 3.16)
+project(mMBa CXX)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
-add_compile_options(-Wall -Wextra -Werror -Wfatal-errors)
+find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(Threads REQUIRED)
 
 add_executable(mMBa
   src/main.cpp
+  src/CommandLine.cpp
   src/DistanceField.cpp
   src/PoreMorphology.cpp
-  src/RunFromYaml.cpp
   src/VoxelVolume.cpp
 )
-target_include_directories(mMBa PRIVATE src)
 target_compile_features(mMBa PRIVATE cxx_std_17)
-
-target_link_libraries(mMBa ${CONAN_LIBS})
+target_link_libraries(mMBa PRIVATE Eigen3::Eigen Threads::Threads)

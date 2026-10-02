@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Parallel.h"
 #include "VoxelVolume.h"
 #include <Eigen/Dense>
 #include <algorithm>
@@ -84,8 +85,8 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
     long KMin = max(xFineMin(2), 0l);
     long KMax = min(xFineMax(2), fineVolume.s(2) - 1);
     if (KMax - KMin > 64) {
-#pragma omp parallel for
-      for (long K = KMin; K <= KMax; ++K)
+      parallelFor(KMax - KMin + 1, [&](size_t dK) {
+        long K = KMin + dK;
         for (long J = max(xFineMin(1), 0l);
              J <= min(xFineMax(1), fineVolume.s(1) - 1); ++J)
           for (long I = max(xFineMin(0), 0l);
@@ -94,6 +95,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
               fineVolume()[size_t(I) * size_t(fineVolume.spacing(0)) +
                            size_t(J) * size_t(fineVolume.spacing(1)) +
                            size_t(K) * size_t(fineVolume.spacing(2))] = true;
+      });
     } else {
       for (long K = KMin; K <= KMax; ++K)
         for (long J = max(xFineMin(1), 0l);
@@ -120,8 +122,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
   voxelVolume.resize(resolution);
 
   size_t possibleCounts = subcellPoints * subcellPoints * subcellPoints;
-#pragma omp parallel for
-  for (size_t vxID = 0; vxID < voxelVolume().size(); ++vxID) {
+  parallelFor(voxelVolume().size(), [&](size_t vxID) {
     size_t counts = 0;
 
     Vector3l vx0Sub = subcellPoints * voxelVolume.vxID_to_vx(vxID);
@@ -139,7 +140,7 @@ inline VoxelVolume<uint8_t> create_coverage_rep(string path) {
     //    if(vxID%1024 == 0)
     //      cout << "\r" << float(vxID+1)*100.0/voxelVolume().size()
     //      << " %     " << flush;
-  }
+  });
   cout << "\r100 %     " << endl;
 
   return voxelVolume;
@@ -157,12 +158,12 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
   VoxelVolume<uint8_t> greyVolume;
   //  size_t cubeLength = 750;
   size_t cubeLength = 512;
-  greyVolume.resize({cubeLength, cubeLength, cubeLength});
+  greyVolume.resize(Vector3l::Constant(cubeLength));
 
   cout << endl << cubeLength << endl;
 
   //  size_t numThreads = 16;
-  size_t numThreads = omp_get_max_threads();
+  size_t numThreads = fred::numThreads();
 
   vector<map<size_t, VoxelVolume<uint8_t>>> subVoxelMaps(numThreads);
 
@@ -225,8 +226,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
     float rVxSquared = rVx * rVx;
 
-#pragma omp parallel for
-    for (size_t threadID = 0; threadID < checkVxs.size(); ++threadID)
+    parallelFor(checkVxs.size(), [&](size_t threadID) {
       for (size_t n = 0; n < checkVxs[threadID].size(); ++n) {
         Vector3l checkVx = checkVxs[threadID][n];
         size_t checkVxID = greyVolume.vx_to_vxID(checkVx);
@@ -296,11 +296,11 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
 
         subVoxelMaps[threadID][checkVxID] = subVoxelVolume;
       }
+    });
   }
 
   cout << "-\n";
-#pragma omp parallel for
-  for (size_t threadID = 0; threadID < numThreads; ++threadID)
+  parallelFor(numThreads, [&](size_t threadID) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
@@ -311,6 +311,7 @@ inline VoxelVolume<uint8_t> import_homberg(string path) {
       if (value > greyVolume[it->first])
         greyVolume[it->first] = value;
     }
+  });
 
   return greyVolume;
 }
@@ -323,12 +324,12 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
   VoxelVolume<uint8_t> greyVolume;
   size_t cubeLength = 512;
-  greyVolume.resize({cubeLength, cubeLength, cubeLength}, 255);
+  greyVolume.resize(Vector3l::Constant(cubeLength), 255);
 
   cout << endl << cubeLength << endl;
 
   //  size_t numThreads = 16;
-  size_t numThreads = omp_get_max_threads();
+  size_t numThreads = fred::numThreads();
 
   vector<map<size_t, VoxelVolume<uint8_t>>> subVoxelMaps(numThreads);
 
@@ -371,8 +372,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
     float rVxSquared = rVx * rVx;
 
-#pragma omp parallel for
-    for (size_t threadID = 0; threadID < checkVxs.size(); ++threadID)
+    parallelFor(checkVxs.size(), [&](size_t threadID) {
       for (size_t n = 0; n < checkVxs[threadID].size(); ++n) {
         Vector3l checkVx = checkVxs[threadID][n];
         size_t checkVxID = greyVolume.vx_to_vxID(checkVx);
@@ -442,11 +442,11 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
 
         subVoxelMaps[threadID][checkVxID] = subVoxelVolume;
       }
+    });
   }
 
   cout << "-\n";
-#pragma omp parallel for
-  for (size_t threadID = 0; threadID < numThreads; ++threadID)
+  parallelFor(numThreads, [&](size_t threadID) {
     for (auto it = subVoxelMaps[threadID].begin();
          it != subVoxelMaps[threadID].end(); ++it) {
       size_t counter = 0;
@@ -457,6 +457,7 @@ inline VoxelVolume<uint8_t> import_homberg_negative(string path) {
       if (value < greyVolume[it->first])
         greyVolume[it->first] = value;
     }
+  });
 
   return greyVolume;
 }
